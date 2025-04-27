@@ -38,23 +38,35 @@ export default function AnimeImposterGame() {
   useEffect(() => {
     if (roomCode) {
       const roomRef = ref(db, `rooms/${roomCode}`);
-      onValue(roomRef, (snapshot) => {
+      const playersRef = ref(db, `rooms/${roomCode}/players`);
+  
+      const unsubscribeRoom = onValue(roomRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
           setHostId(data.hostId);
           setGameStarted(data.gameStarted);
         }
       });
-
-      const playersRef = ref(db, `rooms/${roomCode}/players`);
-      onValue(playersRef, (snapshot) => {
+  
+      const unsubscribePlayers = onValue(playersRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
           setPlayers(Object.values(data));
+  
+          const me = Object.values(data).find(p => p.name === playerName);
+          if (me && me.role) {
+            setMyRole(me.role);
+          }
         }
       });
+  
+      return () => {
+        unsubscribeRoom();
+        unsubscribePlayers();
+      };
     }
-  }, [roomCode]);
+  }, [roomCode, playerName]);
+  
 
   useEffect(() => {
     if (gameStarted && roomCode) {
