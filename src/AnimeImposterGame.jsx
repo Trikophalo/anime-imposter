@@ -45,19 +45,24 @@ export default function AnimeImposterGame() {
         if (data) {
           setHostId(data.hostId);
           setGameStarted(data.gameStarted);
+          if (data.gameStarted) {
+            setShowResults(false);
+          }
+          
         }
       });
 
-      const unsubscribePlayers = onValue(playersRef, (snapshot) => {
+      const unsubscribeRoom = onValue(roomRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
-          setPlayers(Object.values(data));
-          const me = Object.values(data).find(p => p.name === playerName);
-          if (me && me.role) {
-            setMyRole(me.role);
+          setHostId(data.hostId);
+          setGameStarted(data.gameStarted);
+      
+          if (data.gameStarted) {
+            setShowResults(false); // NEU HINZUFÜGEN!!
           }
         }
-      });
+      });      
 
       return () => {
         unsubscribeRoom();
