@@ -35,214 +35,25 @@ export default function AnimeImposterGame() {
   const [imposterName, setImposterName] = useState("");
   const [countdown, setCountdown] = useState(5);
 
-  useEffect(() => {
-    if (roomCode) {
-      const roomRef = ref(db, `rooms/${roomCode}`);
-      const playersRef = ref(db, `rooms/${roomCode}/players`);
-
-      const unsubscribeRoom = onValue(roomRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          setHostId(data.hostId);
-          setGameStarted(data.gameStarted);
-          if (data.gameStarted) {
-            setShowResults(false);
-          }
-        }
-      });
-
-      const unsubscribePlayers = onValue(playersRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          setPlayers(Object.values(data));
-          const me = Object.values(data).find(p => p.name === playerName);
-          if (me && me.role) {
-            setMyRole(me.role);
-          }
-        }
-      });
-
-      return () => {
-        unsubscribeRoom();
-        unsubscribePlayers();
-      };
-    }
-  }, [roomCode, playerName]);
-
-  useEffect(() => {
-    if (gameStarted && roomCode) {
-      const votesRef = ref(db, `rooms/${roomCode}/votes`);
-      const playersRef = ref(db, `rooms/${roomCode}/players`);
-
-      const unsubscribeVotes = onValue(votesRef, async (snapshot) => {
-        const votesData = snapshot.val();
-        const playersSnapshot = await get(playersRef);
-        const playersData = playersSnapshot.val();
-        const playerCount = playersData ? Object.keys(playersData).length : 0;
-        const totalVotes = votesData ? Object.keys(votesData).length : 0;
-
-        setVotesCount(totalVotes);
-
-        if (totalVotes >= playerCount && !showResults) {
-          const voteCounts = {};
-          Object.values(votesData).forEach((votedName) => {
-            voteCounts[votedName] = (voteCounts[votedName] || 0) + 1;
-          });
-          const sortedVotes = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
-          if (sortedVotes.length > 0) {
-            setWinner(sortedVotes[0][0]);
-          }
-
-          const imposter = Object.values(playersData).find(p => p.role === "Imposter");
-          if (imposter) {
-            setImposterName(imposter.name);
-          }
-
-          await update(ref(db, `rooms/${roomCode}`), { gameStarted: false });
-          setShowResults(true);
-        }
-      });
-
-      return () => unsubscribeVotes();
-    }
-  }, [gameStarted, roomCode, showResults]);
-
-  useEffect(() => {
-    if (gameStarted && roomCode && playerName) {
-      const playersRef = ref(db, `rooms/${roomCode}/players`);
-      get(playersRef).then((snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          const playerList = Object.values(data);
-          const me = playerList.find(p => p.name === playerName);
-          if (me && me.role) {
-            setMyRole(me.role);
-          }
-        }
-      });
-      setVotedPlayer("");
-    }
-  }, [gameStarted, roomCode, playerName]);
-
-  useEffect(() => {
-    if (showResults) {
-      setCountdown(5);
-      const interval = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev > 0) {
-            return prev - 1;
-          } else {
-            clearInterval(interval);
-            return 0;
-          }
-        });
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [showResults]);
-
-  async function createRoom() {
-    const newRoomCode = uuidv4().slice(0, 5).toUpperCase();
-    setRoomCode(newRoomCode);
-    await set(ref(db, `rooms/${newRoomCode}`), {
-      players: [],
-      gameStarted: false,
-      votes: {},
-      hostId: null,
-    });
-  }
-
-  async function joinExistingRoom() {
-    if (joinRoomCode) {
-      const roomRef = ref(db, `rooms/${joinRoomCode.toUpperCase()}`);
-      const snapshot = await get(roomRef);
-      if (snapshot.exists()) {
-        setRoomCode(joinRoomCode.toUpperCase());
-        setErrorMessage("");
-      } else {
-        setErrorMessage("Raum existiert nicht!");
-      }
-    }
-  }
-
-  async function joinRoom() {
-    if (playerName && roomCode && !hasJoined && players.length < 8) {
-      const playerRef = push(ref(db, `rooms/${roomCode}/players`));
-      await set(playerRef, { name: playerName, id: playerRef.key });
-      const playersSnapshot = await get(ref(db, `rooms/${roomCode}/players`));
-      const playersData = playersSnapshot.val();
-      if (playersData && Object.keys(playersData).length === 1) {
-        update(ref(db, `rooms/${roomCode}`), { hostId: playerRef.key });
-      }
-      setHasJoined(true);
-    }
-  }
-
-  async function startGame() {
-    if (!players.length) return;
-
-    const imposterIndex = Math.floor(Math.random() * players.length);
-    const commonRole = animeCharacters[Math.floor(Math.random() * animeCharacters.length)];
-
-    for (let i = 0; i < players.length; i++) {
-      const player = players[i];
-      await update(ref(db, `rooms/${roomCode}/players/${player.id}`), {
-        role: i === imposterIndex ? "Imposter" : commonRole
-      });
-    }
-
-    await update(ref(db, `rooms/${roomCode}`), { gameStarted: true, votes: {} });
-  }
-
-  async function startNewGame() {
-    if (!players.length) return;
-
-    await update(ref(db, `rooms/${roomCode}`), { votes: {}, gameStarted: false });
-
-    const playersSnapshot = await get(ref(db, `rooms/${roomCode}/players`));
-    const playersData = playersSnapshot.val();
-    const playerList = playersData ? Object.values(playersData) : [];
-
-    const imposterIndex = Math.floor(Math.random() * playerList.length);
-    const commonRole = animeCharacters[Math.floor(Math.random() * animeCharacters.length)];
-
-    for (let i = 0; i < playerList.length; i++) {
-      const player = playerList[i];
-      await update(ref(db, `rooms/${roomCode}/players/${player.id}`), {
-        role: i === imposterIndex ? "Imposter" : commonRole
-      });
-    }
-
-    await update(ref(db, `rooms/${roomCode}`), { gameStarted: true });
-
-    setShowResults(false);
-    setVotedPlayer("");
-    setVotesCount(0);
-  }
-
-  async function vote(name) {
-    if (roomCode && !votedPlayer) {
-      const voteRef = ref(db, `rooms/${roomCode}/votes/${playerName}`);
-      await set(voteRef, name);
-      setVotedPlayer(name);
-    }
-  }
-
   return (
-    <div className="flex flex-col items-center p-10 min-h-screen bg-gradient-to-br from-blue-500 to-blue-800 text-white text-4xl">
+    <div className="flex flex-col items-center p-10 min-h-screen bg-blue-100 text-blue-900 text-5xl">
       {showResults ? (
         <div className="mt-16 text-center">
-          <h2 className="text-6xl mb-10">Ergebnisse</h2>
-          <p className="text-5xl mb-6">Am meisten Votes: {winner}</p>
-          <p className="text-5xl mb-6">Der Imposter war: {imposterName}</p>
-
+          <h2 className="text-9xl font-extrabold mb-10">Ergebnisse</h2>
+          <p className="text-6xl mb-6">Am meisten Votes: {winner}</p>
+          <p className="text-6xl mb-6">Der Imposter war: {imposterName}</p>
+  
           {countdown > 0 ? (
-            <p className="text-4xl mt-6 animate-pulse">Nächste Runde startet in {countdown} Sekunden...</p>
+            <p className="text-5xl mt-6 animate-pulse">Nächste Runde startet in {countdown} Sekunden...</p>
           ) : (
             players.find(p => p.name === playerName && p.id === hostId) && (
-              <button onClick={startNewGame} className="mt-10 bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-10 rounded text-4xl">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                onClick={startNewGame}
+                className="mt-10 bg-blue-500 hover:bg-blue-600 text-white font-bold py-8 px-16 rounded-2xl text-6xl transition-all duration-300"
+              >
                 Neues Spiel starten
-              </button>
+              </motion.button>
             )
           )}
         </div>
@@ -250,74 +61,110 @@ export default function AnimeImposterGame() {
         <>
           {!roomCode && (
             <>
-              <h1 className="text-8xl font-extrabold mb-10">Anime Imposter 🎭</h1>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl mb-6" onClick={createRoom}>Neuen Raum erstellen</button>
-              <input placeholder="Raumcode eingeben" value={joinRoomCode} onChange={e => setJoinRoomCode(e.target.value)} className="my-4 text-black text-3xl p-6 w-full rounded" />
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl w-full" onClick={joinExistingRoom}>Bestehendem Raum beitreten</button>
-              {errorMessage && <div className="text-red-400 text-3xl mt-4">{errorMessage}</div>}
+              <h1 className="text-9xl font-extrabold mb-10">Anime Imposter 🎭</h1>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                onClick={createRoom}
+                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-8 px-16 rounded-2xl text-6xl mb-8 transition-all duration-300"
+              >
+                Neuen Raum erstellen
+              </motion.button>
+              <input
+                placeholder="Raumcode eingeben"
+                value={joinRoomCode}
+                onChange={e => setJoinRoomCode(e.target.value)}
+                className="my-8 text-black text-5xl p-8 w-full max-w-xl rounded-2xl"
+              />
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                onClick={joinExistingRoom}
+                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-8 px-16 rounded-2xl text-6xl w-full max-w-xl transition-all duration-300"
+              >
+                Bestehendem Raum beitreten
+              </motion.button>
+              {errorMessage && <div className="text-red-500 text-5xl mt-8">{errorMessage}</div>}
             </>
           )}
-
+  
           {roomCode && !gameStarted && (
             <>
-              <h2 className="text-6xl mb-6">Raumcode: {roomCode}</h2>
+              <h2 className="text-8xl mb-8">Raumcode: {roomCode}</h2>
               {!hasJoined && players.length < 8 && (
                 <>
-                  <input placeholder="Dein Name" value={playerName} onChange={e => setPlayerName(e.target.value)} className="my-4 text-black text-3xl p-6 w-full rounded" />
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl w-full mb-4" onClick={joinRoom}>Beitreten</button>
+                  <input
+                    placeholder="Dein Name"
+                    value={playerName}
+                    onChange={e => setPlayerName(e.target.value)}
+                    className="my-8 text-black text-5xl p-8 w-full max-w-xl rounded-2xl"
+                  />
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    onClick={joinRoom}
+                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-8 px-16 rounded-2xl text-6xl w-full max-w-xl transition-all duration-300"
+                  >
+                    Beitreten
+                  </motion.button>
                 </>
               )}
-              <div className="text-5xl mb-4">Spieler ({players.length}/8):</div>
+              <div className="text-6xl mb-8">Spieler ({players.length}/8):</div>
               {players.map((player) => (
-                <div key={player.id} className="text-3xl">
+                <div key={player.id} className="text-5xl">
                   {player.name} {player.id === hostId && "(Host)"}
                 </div>
               ))}
               {players.length >= 3 && players.length <= 8 && hasJoined && players.find(p => p.name === playerName && p.id === hostId) && (
-                <button onClick={startGame} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl mt-10">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  onClick={startGame}
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-8 px-16 rounded-2xl text-6xl mt-12 transition-all duration-300"
+                >
                   Spiel starten
-                </button>
+                </motion.button>
               )}
             </>
           )}
-
+  
           {gameStarted && (
             <>
-              <h1 className="text-8xl font-extrabold mb-10">Deine Rolle:</h1>
-              <motion.div className="bg-blue-700 p-16 rounded-lg text-6xl font-bold" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <h1 className="text-9xl font-extrabold mb-10">Deine Rolle:</h1>
+              <motion.div
+                className="bg-blue-300 p-20 rounded-2xl text-7xl font-bold mb-12"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
                 {myRole || "Wird geladen..."}
               </motion.div>
-
+  
               <div className="mt-16">
-                <h3 className="text-5xl mb-6">Wähle den Imposter:</h3>
+                <h3 className="text-7xl mb-12">Wähle den Imposter:</h3>
                 {players.map((player) => (
                   <motion.button
-                    whileHover={{ scale: 1.1 }}
+                    whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     key={player.id}
                     onClick={() => vote(player.name)}
                     disabled={votedPlayer !== ""}
-                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500 text-white font-bold py-4 px-8 rounded text-3xl m-4 transition-all duration-300"
+                    className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-bold py-6 px-12 rounded-2xl text-5xl m-6 transition-all duration-300"
                   >
                     {player.name}
                   </motion.button>
                 ))}
               </div>
-
+  
               {votedPlayer && (
-                <div className="mt-10 text-center">
-                  <h4 className="text-4xl mb-4">Du hast abgestimmt für: {votedPlayer}</h4>
-                  <p className="text-3xl mb-6 animate-pulse">Voting läuft... Bitte warten</p>
-                  <div className="w-full bg-white rounded-full h-8 mt-8">
+                <div className="mt-16 text-center">
+                  <h4 className="text-6xl mb-6">Du hast abgestimmt für: {votedPlayer}</h4>
+                  <p className="text-5xl mb-8 animate-pulse">Voting läuft...</p>
+                  <div className="w-full bg-white rounded-full h-10 mt-6">
                     <div
-                      className="bg-green-600 h-8 rounded-full"
+                      className="bg-green-500 h-10 rounded-full"
                       style={{
                         width: `${(votesCount / players.length) * 100}%`,
                         transition: "width 0.5s ease-in-out"
                       }}
                     ></div>
                   </div>
-                  <p className="text-3xl mt-4">{votesCount}/{players.length} Stimmen abgegeben</p>
+                  <p className="text-5xl mt-6">{votesCount}/{players.length} Stimmen abgegeben</p>
                 </div>
               )}
             </>
@@ -326,4 +173,4 @@ export default function AnimeImposterGame() {
       )}
     </div>
   );
-}
+}  
