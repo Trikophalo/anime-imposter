@@ -138,36 +138,41 @@ export default function AnimeImposterGame() {
 
   async function vote(name) {
     if (roomCode && !votedPlayer) {
-      const voteRef = ref(db, `rooms/${roomCode}/votes/${name}`);
-      await set(voteRef, (votes[name] || 0) + 1);
+      const voteRef = ref(db, `rooms/${roomCode}/votes/${playerName}`);
+      await set(voteRef, name);
       setVotedPlayer(name);
-
+  
       const votesSnapshot = await get(ref(db, `rooms/${roomCode}/votes`));
       const votesData = votesSnapshot.val();
-      if (votesData) {
-        let totalVotes = Object.values(votesData).reduce((sum, v) => sum + v, 0);
-        setVotesCount(totalVotes);
-
-        const playersSnapshot = await get(ref(db, `rooms/${roomCode}/players`));
-        const playersData = playersSnapshot.val();
-        const playerCount = playersData ? Object.keys(playersData).length : 0;
-
-        if (totalVotes >= playerCount) {
-          const sortedVotes = Object.entries(votesData).sort((a, b) => b[1] - a[1]);
-          if (sortedVotes.length > 0) {
-            setWinner(sortedVotes[0][0]);
-          }
-
-          const imposter = Object.values(playersData).find(p => p.role === "Imposter");
-          if (imposter) {
-            setImposterName(imposter.name);
-          }
-
-          setShowResults(true);
+  
+      const playersSnapshot = await get(ref(db, `rooms/${roomCode}/players`));
+      const playersData = playersSnapshot.val();
+      const playerCount = playersData ? Object.keys(playersData).length : 0;
+  
+      const totalVotes = votesData ? Object.keys(votesData).length : 0;
+      setVotesCount(totalVotes);
+  
+      if (totalVotes >= playerCount) {
+        // Berechne den Gewinner
+        const voteCounts = {};
+        Object.values(votesData).forEach((votedName) => {
+          voteCounts[votedName] = (voteCounts[votedName] || 0) + 1;
+        });
+        const sortedVotes = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
+        if (sortedVotes.length > 0) {
+          setWinner(sortedVotes[0][0]);
         }
+  
+        const imposter = Object.values(playersData).find(p => p.role === "Imposter");
+        if (imposter) {
+          setImposterName(imposter.name);
+        }
+  
+        setShowResults(true);
       }
     }
   }
+  
 
   return (
     <div className="flex flex-col items-center p-10 min-h-screen bg-gradient-to-br from-blue-500 to-blue-800 text-white text-4xl">
