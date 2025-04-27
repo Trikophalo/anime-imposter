@@ -34,26 +34,78 @@ export default function AnimeImposterGame() {
   const [winner, setWinner] = useState("");
   const [imposterName, setImposterName] = useState("");
 
+  // Live-Daten hören
   useEffect(() => {
     if (roomCode) {
       const roomRef = ref(db, `rooms/${roomCode}`);
-  
+      const playersRef = ref(db, `rooms/${roomCode}/players`);
+
       const unsubscribeRoom = onValue(roomRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
           setHostId(data.hostId);
-          setGameStarted(data.gameStarted); // <-- wichtig
+          setGameStarted(data.gameStarted);
         }
       });
-  
+
+      const unsubscribePlayers = onValue(playersRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          setPlayers(Object.values(data));
+          const me = Object.values(data).find(p => p.name === playerName);
+          if (me && me.role) {
+            setMyRole(me.role);
+          }
+        }
+      });
+
       return () => {
         unsubscribeRoom();
+        unsubscribePlayers();
       };
     }
-  }, [roomCode]);
-  
-  
+  }, [roomCode, playerName]);
 
+  // Votes live hören
+  useEffect(() => {
+    if (gameStarted && roomCode) {
+      const votesRef = ref(db, `rooms/${roomCode}/votes`);
+      const playersRef = ref(db, `rooms/${roomCode}/players`);
+
+      const unsubscribeVotes = onValue(votesRef, async (snapshot) => {
+        const votesData = snapshot.val();
+        const playersSnapshot = await get(playersRef);
+        const playersData = playersSnapshot.val();
+        const playerCount = playersData ? Object.keys(playersData).length : 0;
+        const totalVotes = votesData ? Object.keys(votesData).length : 0;
+
+        setVotesCount(totalVotes);
+
+        if (totalVotes >= playerCount && !showResults) {
+          const voteCounts = {};
+          Object.values(votesData).forEach((votedName) => {
+            voteCounts[votedName] = (voteCounts[votedName] || 0) + 1;
+          });
+          const sortedVotes = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
+          if (sortedVotes.length > 0) {
+            setWinner(sortedVotes[0][0]);
+          }
+
+          const imposter = Object.values(playersData).find(p => p.role === "Imposter");
+          if (imposter) {
+            setImposterName(imposter.name);
+          }
+
+          await update(ref(db, `rooms/${roomCode}`), { gameStarted: false });
+          setShowResults(true);
+        }
+      });
+
+      return () => unsubscribeVotes();
+    }
+  }, [gameStarted, roomCode, showResults]);
+
+  // Neue Rolle laden wenn neues Spiel startet
   useEffect(() => {
     if (gameStarted && roomCode && playerName) {
       const playersRef = ref(db, `rooms/${roomCode}/players`);
@@ -69,7 +121,6 @@ export default function AnimeImposterGame() {
       });
     }
   }, [gameStarted, roomCode, playerName]);
-  
 
   async function createRoom() {
     const newRoomCode = uuidv4().slice(0, 5).toUpperCase();
@@ -110,52 +161,45 @@ export default function AnimeImposterGame() {
 
   async function startGame() {
     if (!players.length) return;
-  
+
     const imposterIndex = Math.floor(Math.random() * players.length);
     const commonRole = animeCharacters[Math.floor(Math.random() * animeCharacters.length)];
-  
+
     for (let i = 0; i < players.length; i++) {
       const player = players[i];
       await update(ref(db, `rooms/${roomCode}/players/${player.id}`), {
         role: i === imposterIndex ? "Imposter" : commonRole
       });
     }
-  
+
     await update(ref(db, `rooms/${roomCode}`), { gameStarted: true, votes: {} });
   }
-  
 
   async function startNewGame() {
     if (!players.length) return;
-  
-    // 1. Erst votes löschen und gameStarted auf false setzen (Reset)
+
     await update(ref(db, `rooms/${roomCode}`), { votes: {}, gameStarted: false });
-  
-    // 2. Neue Rollen verteilen
+
     const playersSnapshot = await get(ref(db, `rooms/${roomCode}/players`));
     const playersData = playersSnapshot.val();
     const playerList = playersData ? Object.values(playersData) : [];
-  
+
     const imposterIndex = Math.floor(Math.random() * playerList.length);
     const commonRole = animeCharacters[Math.floor(Math.random() * animeCharacters.length)];
-  
+
     for (let i = 0; i < playerList.length; i++) {
       const player = playerList[i];
       await update(ref(db, `rooms/${roomCode}/players/${player.id}`), {
         role: i === imposterIndex ? "Imposter" : commonRole
       });
     }
-  
-    // 3. Jetzt gameStarted = true setzen -> ALLE bekommen neues Spiel!
+
     await update(ref(db, `rooms/${roomCode}`), { gameStarted: true });
-  
-    // 4. Lokale Variablen zurücksetzen
+
     setShowResults(false);
     setVotedPlayer("");
     setVotesCount(0);
   }
-  
-  
 
   async function vote(name) {
     if (roomCode && !votedPlayer) {
