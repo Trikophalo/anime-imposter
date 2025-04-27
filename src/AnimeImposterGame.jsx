@@ -98,7 +98,9 @@ export default function AnimeImposterGame() {
             setImposterName(imposter.name);
           }
   
+          await update(ref(db, `rooms/${roomCode}`), { gameStarted: false });
           setShowResults(true);
+
         }
       });
   
