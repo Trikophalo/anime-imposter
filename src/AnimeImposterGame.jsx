@@ -228,19 +228,63 @@ export default function AnimeImposterGame() {
     }
   }
 
+  // Verwende inline-Styles, die definitiv angewendet werden sollten
+  const mainContainerStyle = {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    padding: "40px",
+    minHeight: "100vh",
+    backgroundColor: "#0a0a4a", // Sehr dunkles Blau
+    color: "white",
+    fontSize: "36px"
+  };
+
+  const titleStyle = {
+    fontSize: "92px",
+    fontWeight: "900",
+    marginBottom: "40px",
+    color: "#ff3366", // Knalliges Pink
+    textShadow: "3px 3px 6px rgba(0,0,0,0.5)"
+  };
+
+  const buttonStyle = {
+    backgroundColor: "#39c2ff", // Sehr helles Blau
+    color: "white",
+    fontWeight: "bold",
+    padding: "20px 40px",
+    borderRadius: "16px",
+    fontSize: "36px",
+    margin: "10px",
+    cursor: "pointer",
+    boxShadow: "0 4px 8px rgba(0,0,0,0.3)",
+    border: "none",
+    width: "100%"
+  };
+
+  const inputStyle = {
+    padding: "20px",
+    fontSize: "32px",
+    width: "100%",
+    borderRadius: "16px",
+    margin: "20px 0",
+    border: "none",
+    color: "black"
+  };
+
   return (
-    <div className="flex flex-col items-center p-10 min-h-screen bg-gradient-to-br from-blue-900 to-blue-950 text-white text-5xl">
+    <div style={mainContainerStyle}>
       {showResults ? (
-        <div className="mt-20 text-center">
-          <h2 className="text-7xl mb-12 font-bold">Ergebnisse</h2>
-          <p className="text-6xl mb-8">Am meisten Votes: {winner}</p>
-          <p className="text-6xl mb-8">Der Imposter war: {imposterName}</p>
+        <div style={{marginTop: "80px", textAlign: "center"}}>
+          <h2 style={{fontSize: "72px", marginBottom: "40px", fontWeight: "bold"}}>Ergebnisse</h2>
+          <p style={{fontSize: "60px", marginBottom: "30px"}}>Am meisten Votes: {winner}</p>
+          <p style={{fontSize: "60px", marginBottom: "30px"}}>Der Imposter war: {imposterName}</p>
 
           {countdown > 0 ? (
-            <p className="text-5xl mt-8 animate-pulse">Nächste Runde startet in {countdown} Sekunden...</p>
+            <p style={{fontSize: "48px", marginTop: "30px"}}>Nächste Runde startet in {countdown} Sekunden...</p>
           ) : (
             players.find(p => p.name === playerName && p.id === hostId) && (
-              <button onClick={startNewGame} className="mt-12 bg-blue-400 hover:bg-blue-500 text-white font-bold py-8 px-12 rounded-xl text-5xl shadow-lg">
+              <button onClick={startNewGame} style={{...buttonStyle, marginTop: "40px"}}>
                 Neues Spiel starten
               </button>
             )
@@ -250,31 +294,31 @@ export default function AnimeImposterGame() {
         <>
           {!roomCode && (
             <>
-              <h1 className="text-9xl font-extrabold mb-16 mt-8">Anime Imposter 🎭</h1>
-              <button className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-8 px-12 rounded-xl text-5xl mb-8 shadow-lg w-full" onClick={createRoom}>Neuen Raum erstellen</button>
-              <input placeholder="Raumcode eingeben" value={joinRoomCode} onChange={e => setJoinRoomCode(e.target.value)} className="my-6 text-black text-4xl p-8 w-full rounded-xl" />
-              <button className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-8 px-12 rounded-xl text-5xl w-full shadow-lg" onClick={joinExistingRoom}>Bestehendem Raum beitreten</button>
-              {errorMessage && <div className="text-red-400 text-4xl mt-6 font-bold">{errorMessage}</div>}
+              <h1 style={titleStyle}>SUPER ANIME IMPOSTER GAME 2.0! 🎮</h1>
+              <button style={buttonStyle} onClick={createRoom}>Neuen Raum erstellen</button>
+              <input placeholder="Raumcode eingeben" value={joinRoomCode} onChange={e => setJoinRoomCode(e.target.value)} style={inputStyle} />
+              <button style={buttonStyle} onClick={joinExistingRoom}>Bestehendem Raum beitreten</button>
+              {errorMessage && <div style={{color: "#ff4444", fontSize: "32px", marginTop: "20px", fontWeight: "bold"}}>{errorMessage}</div>}
             </>
           )}
 
           {roomCode && !gameStarted && (
             <>
-              <h2 className="text-7xl mb-8 font-bold">Raumcode: {roomCode}</h2>
+              <h2 style={{fontSize: "72px", marginBottom: "30px", fontWeight: "bold"}}>Raumcode: {roomCode}</h2>
               {!hasJoined && players.length < 8 && (
                 <>
-                  <input placeholder="Dein Name" value={playerName} onChange={e => setPlayerName(e.target.value)} className="my-6 text-black text-4xl p-8 w-full rounded-xl" />
-                  <button className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-8 px-12 rounded-xl text-5xl w-full mb-6 shadow-lg" onClick={joinRoom}>Beitreten</button>
+                  <input placeholder="Dein Name" value={playerName} onChange={e => setPlayerName(e.target.value)} style={inputStyle} />
+                  <button style={buttonStyle} onClick={joinRoom}>Beitreten</button>
                 </>
               )}
-              <div className="text-6xl mb-6 font-bold">Spieler ({players.length}/8):</div>
+              <div style={{fontSize: "60px", marginBottom: "20px", fontWeight: "bold"}}>Spieler ({players.length}/8):</div>
               {players.map((player) => (
-                <div key={player.id} className="text-4xl mb-2">
+                <div key={player.id} style={{fontSize: "36px", marginBottom: "10px"}}>
                   {player.name} {player.id === hostId && "(Host)"}
                 </div>
               ))}
               {players.length >= 3 && players.length <= 8 && hasJoined && players.find(p => p.name === playerName && p.id === hostId) && (
-                <button onClick={startGame} className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-8 px-12 rounded-xl text-5xl mt-12 shadow-lg">
+                <button onClick={startGame} style={{...buttonStyle, marginTop: "40px"}}>
                   Spiel starten
                 </button>
               )}
@@ -283,14 +327,25 @@ export default function AnimeImposterGame() {
 
           {gameStarted && (
             <>
-              <h1 className="text-9xl font-extrabold mb-12 mt-6">Deine Rolle:</h1>
-              <motion.div className="bg-blue-800 p-20 rounded-xl text-7xl font-bold shadow-xl" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <h1 style={{fontSize: "80px", fontWeight: "900", marginBottom: "40px", color: "#ff3366"}}>Deine Rolle:</h1>
+              <motion.div 
+                style={{
+                  backgroundColor: "#1a1a8a", 
+                  padding: "60px", 
+                  borderRadius: "20px", 
+                  fontSize: "64px", 
+                  fontWeight: "bold",
+                  boxShadow: "0 8px 16px rgba(0,0,0,0.5)"
+                }} 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }}
+              >
                 {myRole || "Wird geladen..."}
               </motion.div>
 
-              <div className="mt-20">
-                <h3 className="text-6xl mb-8 font-bold">Wähle den Imposter:</h3>
-                <div className="grid grid-cols-2 gap-6">
+              <div style={{marginTop: "60px"}}>
+                <h3 style={{fontSize: "56px", marginBottom: "30px", fontWeight: "bold"}}>Wähle den Imposter:</h3>
+                <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px"}}>
                   {players.map((player) => (
                     <motion.button
                       whileHover={{ scale: 1.1 }}
@@ -298,7 +353,11 @@ export default function AnimeImposterGame() {
                       key={player.id}
                       onClick={() => vote(player.name)}
                       disabled={votedPlayer !== ""}
-                      className="bg-blue-400 hover:bg-blue-500 disabled:bg-gray-500 text-white font-bold py-6 px-10 rounded-xl text-4xl m-4 transition-all duration-300 shadow-lg"
+                      style={{
+                        ...buttonStyle,
+                        opacity: votedPlayer ? 0.6 : 1,
+                        backgroundColor: votedPlayer === player.name ? "#ff3366" : "#39c2ff"
+                      }}
                     >
                       {player.name}
                     </motion.button>
@@ -307,19 +366,21 @@ export default function AnimeImposterGame() {
               </div>
 
               {votedPlayer && (
-                <div className="mt-12 text-center w-full">
-                  <h4 className="text-5xl mb-6 font-bold">Du hast abgestimmt für: {votedPlayer}</h4>
-                  <p className="text-4xl mb-8 animate-pulse">Voting läuft... Bitte warten</p>
-                  <div className="w-full bg-white rounded-full h-10 mt-10">
+                <div style={{marginTop: "60px", textAlign: "center", width: "100%"}}>
+                  <h4 style={{fontSize: "48px", marginBottom: "20px", fontWeight: "bold"}}>Du hast abgestimmt für: {votedPlayer}</h4>
+                  <p style={{fontSize: "36px", marginBottom: "30px"}}>Voting läuft... Bitte warten</p>
+                  <div style={{width: "100%", backgroundColor: "white", borderRadius: "20px", height: "20px"}}>
                     <div
-                      className="bg-green-600 h-10 rounded-full"
                       style={{
+                        backgroundColor: "#00cc66",
+                        height: "20px",
+                        borderRadius: "20px",
                         width: `${(votesCount / players.length) * 100}%`,
                         transition: "width 0.5s ease-in-out"
                       }}
                     ></div>
                   </div>
-                  <p className="text-4xl mt-6 font-bold">{votesCount}/{players.length} Stimmen abgegeben</p>
+                  <p style={{fontSize: "36px", marginTop: "20px", fontWeight: "bold"}}>{votesCount}/{players.length} Stimmen abgegeben</p>
                 </div>
               )}
             </>
