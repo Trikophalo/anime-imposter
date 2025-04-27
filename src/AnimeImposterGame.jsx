@@ -33,6 +33,7 @@ export default function AnimeImposterGame() {
   const [showResults, setShowResults] = useState(false);
   const [winner, setWinner] = useState("");
   const [imposterName, setImposterName] = useState("");
+  const [votesCount, setVotesCount] = useState(0);
 
   useEffect(() => {
     if (roomCode) {
@@ -128,6 +129,7 @@ export default function AnimeImposterGame() {
     setShowResults(false);
     setVotedPlayer("");
     setVotes({});
+    setVotesCount(0);
   }
 
   async function startNewGame() {
@@ -143,22 +145,27 @@ export default function AnimeImposterGame() {
       const votesSnapshot = await get(ref(db, `rooms/${roomCode}/votes`));
       const votesData = votesSnapshot.val();
       if (votesData) {
-        const sortedVotes = Object.entries(votesData).sort((a, b) => b[1] - a[1]);
-        if (sortedVotes.length > 0) {
-          setWinner(sortedVotes[0][0]);
+        let totalVotes = Object.values(votesData).reduce((sum, v) => sum + v, 0);
+        setVotesCount(totalVotes);
+
+        const playersSnapshot = await get(ref(db, `rooms/${roomCode}/players`));
+        const playersData = playersSnapshot.val();
+        const playerCount = playersData ? Object.keys(playersData).length : 0;
+
+        if (totalVotes >= playerCount) {
+          const sortedVotes = Object.entries(votesData).sort((a, b) => b[1] - a[1]);
+          if (sortedVotes.length > 0) {
+            setWinner(sortedVotes[0][0]);
+          }
+
+          const imposter = Object.values(playersData).find(p => p.role === "Imposter");
+          if (imposter) {
+            setImposterName(imposter.name);
+          }
+
+          setShowResults(true);
         }
       }
-
-      const playersSnapshot = await get(ref(db, `rooms/${roomCode}/players`));
-      const playersData = playersSnapshot.val();
-      if (playersData) {
-        const imposter = Object.values(playersData).find(p => p.role === "Imposter");
-        if (imposter) {
-          setImposterName(imposter.name);
-        }
-      }
-
-      setShowResults(true);
     }
   }
 
@@ -219,8 +226,23 @@ export default function AnimeImposterGame() {
           </div>
 
           {votedPlayer && (
-            <div className="mt-10">
-              <h4 className="text-4xl">Du hast abgestimmt für: {votedPlayer}</h4>
+            <div className="mt-10 text-center">
+              <h4 className="text-4xl mb-4">Du hast abgestimmt für: {votedPlayer}</h4>
+              <p className="text-3xl mb-6">Warte, bis alle Spieler abgestimmt haben...</p>
+
+              <div className="w-full bg-white rounded-full h-8 mt-8">
+                <div
+                  className="bg-green-600 h-8 rounded-full"
+                  style={{
+                    width: `${(votesCount / players.length) * 100}%`,
+                    transition: "width 0.5s ease-in-out"
+                  }}
+                ></div>
+              </div>
+
+              <p className="text-3xl mt-4">
+                {votesCount}/{players.length} Stimmen abgegeben
+              </p>
             </div>
           )}
         </>
