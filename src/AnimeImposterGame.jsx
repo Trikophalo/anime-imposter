@@ -33,25 +33,24 @@ export default function AnimeImposterGame() {
   const [showResults, setShowResults] = useState(false);
   const [winner, setWinner] = useState("");
   const [imposterName, setImposterName] = useState("");
+  const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
     if (roomCode) {
       const roomRef = ref(db, `rooms/${roomCode}`);
       const playersRef = ref(db, `rooms/${roomCode}/players`);
-  
+
       const unsubscribeRoom = onValue(roomRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
           setHostId(data.hostId);
           setGameStarted(data.gameStarted);
-  
-          // HIER neu einfügen:
           if (data.gameStarted) {
             setShowResults(false);
           }
         }
       });
-  
+
       const unsubscribePlayers = onValue(playersRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
@@ -62,16 +61,14 @@ export default function AnimeImposterGame() {
           }
         }
       });
-  
+
       return () => {
         unsubscribeRoom();
         unsubscribePlayers();
       };
     }
   }, [roomCode, playerName]);
-  
 
-  // Votes live hören
   useEffect(() => {
     if (gameStarted && roomCode) {
       const votesRef = ref(db, `rooms/${roomCode}/votes`);
@@ -110,7 +107,6 @@ export default function AnimeImposterGame() {
     }
   }, [gameStarted, roomCode, showResults]);
 
-  // Neue Rolle laden wenn neues Spiel startet
   useEffect(() => {
     if (gameStarted && roomCode && playerName) {
       const playersRef = ref(db, `rooms/${roomCode}/players`);
@@ -127,6 +123,23 @@ export default function AnimeImposterGame() {
       setVotedPlayer("");
     }
   }, [gameStarted, roomCode, playerName]);
+
+  useEffect(() => {
+    if (showResults) {
+      setCountdown(5);
+      const interval = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev > 0) {
+            return prev - 1;
+          } else {
+            clearInterval(interval);
+            return 0;
+          }
+        });
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [showResults]);
 
   async function createRoom() {
     const newRoomCode = uuidv4().slice(0, 5).toUpperCase();
@@ -223,10 +236,14 @@ export default function AnimeImposterGame() {
           <p className="text-5xl mb-6">Am meisten Votes: {winner}</p>
           <p className="text-5xl mb-6">Der Imposter war: {imposterName}</p>
 
-          {players.find(p => p.name === playerName && p.id === hostId) && (
-            <button onClick={startNewGame} className="mt-10 bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-10 rounded text-4xl">
-              Neues Spiel starten
-            </button>
+          {countdown > 0 ? (
+            <p className="text-4xl mt-6 animate-pulse">Nächste Runde startet in {countdown} Sekunden...</p>
+          ) : (
+            players.find(p => p.name === playerName && p.id === hostId) && (
+              <button onClick={startNewGame} className="mt-10 bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-10 rounded text-4xl">
+                Neues Spiel starten
+              </button>
+            )
           )}
         </div>
       ) : (
@@ -274,21 +291,23 @@ export default function AnimeImposterGame() {
               <div className="mt-16">
                 <h3 className="text-5xl mb-6">Wähle den Imposter:</h3>
                 {players.map((player) => (
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
                     key={player.id}
                     onClick={() => vote(player.name)}
                     disabled={votedPlayer !== ""}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded text-3xl m-4"
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500 text-white font-bold py-4 px-8 rounded text-3xl m-4 transition-all duration-300"
                   >
                     {player.name}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
 
               {votedPlayer && (
                 <div className="mt-10 text-center">
                   <h4 className="text-4xl mb-4">Du hast abgestimmt für: {votedPlayer}</h4>
-                  <p className="text-3xl mb-6">Warte, bis alle Spieler abgestimmt haben...</p>
+                  <p className="text-3xl mb-6 animate-pulse">Voting läuft... Bitte warten</p>
                   <div className="w-full bg-white rounded-full h-8 mt-8">
                     <div
                       className="bg-green-600 h-8 rounded-full"
