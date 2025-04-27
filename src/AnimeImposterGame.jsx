@@ -144,41 +144,47 @@ export default function AnimeImposterGame() {
 
   async function startGame() {
     if (!players.length) return;
+  
     const imposterIndex = Math.floor(Math.random() * players.length);
-
+    const commonRole = animeCharacters[Math.floor(Math.random() * animeCharacters.length)];
+  
     for (let i = 0; i < players.length; i++) {
       const player = players[i];
       await update(ref(db, `rooms/${roomCode}/players/${player.id}`), {
-        role: i === imposterIndex ? "Imposter" : animeCharacters[Math.floor(Math.random() * animeCharacters.length)]
+        role: i === imposterIndex ? "Imposter" : commonRole
       });
     }
-
+  
     await update(ref(db, `rooms/${roomCode}`), { gameStarted: true, votes: {} });
   }
+  
 
   async function startNewGame() {
     if (!players.length) return;
-
+  
     await update(ref(db, `rooms/${roomCode}`), { votes: {}, gameStarted: false });
-
+  
     const playersSnapshot = await get(ref(db, `rooms/${roomCode}/players`));
     const playersData = playersSnapshot.val();
     const playerList = playersData ? Object.values(playersData) : [];
-
+  
     const imposterIndex = Math.floor(Math.random() * playerList.length);
-
+    const commonRole = animeCharacters[Math.floor(Math.random() * animeCharacters.length)];
+  
     for (let i = 0; i < playerList.length; i++) {
       const player = playerList[i];
       await update(ref(db, `rooms/${roomCode}/players/${player.id}`), {
-        role: i === imposterIndex ? "Imposter" : animeCharacters[Math.floor(Math.random() * animeCharacters.length)]
+        role: i === imposterIndex ? "Imposter" : commonRole
       });
     }
-
+  
     await update(ref(db, `rooms/${roomCode}`), { gameStarted: true });
+  
     setShowResults(false);
     setVotedPlayer("");
     setVotesCount(0);
   }
+  
 
   async function vote(name) {
     if (roomCode && !votedPlayer) {
