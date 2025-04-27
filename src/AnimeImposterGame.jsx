@@ -47,6 +47,30 @@ export default function AnimeImposterGame() {
     }
   }, [gameStarted, roomCode, playerName]);
 
+  async function startGame() {
+    if (!players.length) return;
+    const randomCharacter = animeCharacters[Math.floor(Math.random() * animeCharacters.length)];
+    const imposterIndex = Math.floor(Math.random() * players.length);
+    const assignedRoles = players.map((player, index) => ({
+      ...player,
+      role: index === imposterIndex ? "Imposter" : randomCharacter
+    }));
+    assignedRoles.forEach((player) => {
+      if (player && player.id && player.role) {
+        update(ref(db, `rooms/${roomCode}/players/${player.id}`), { role: player.role });
+      }
+    });
+    await update(ref(db, `rooms/${roomCode}`), { gameStarted: true });
+  }
+
+  function vote(name) {
+    if (roomCode) {
+      const voteRef = ref(db, `rooms/${roomCode}/votes/${name}`);
+      set(voteRef, (votes[name] || 0) + 1);
+      setVotedPlayer(name);
+    }
+  }
+
   return (
     <div className="flex flex-col items-center p-10 min-h-screen bg-gradient-to-br from-blue-500 to-blue-800 text-white text-4xl">
       {!gameStarted ? (
