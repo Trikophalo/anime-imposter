@@ -31,112 +31,61 @@ export default function AnimeImposterGame() {
   const [hasJoined, setHasJoined] = useState(false);
   const [hostId, setHostId] = useState(null);
 
-  function createRoom() {
-    const newRoomCode = uuidv4().slice(0, 5).toUpperCase();
-    setRoomCode(newRoomCode);
-    set(ref(db, `rooms/${newRoomCode}`), {
-      players: [],
-      gameStarted: false,
-      votes: {},
-      hostId: null
-    });
-  }
+  function createRoom() { ... }
+  async function joinExistingRoom() { ... }
+  async function joinRoom() { ... }
 
-  async function joinExistingRoom() {
-    if (joinRoomCode) {
-      const roomRef = ref(db, `rooms/${joinRoomCode.toUpperCase()}`);
-      const snapshot = await get(roomRef);
-      if (snapshot.exists()) {
-        setRoomCode(joinRoomCode.toUpperCase());
-        setErrorMessage("");
-      } else {
-        setErrorMessage("Raum existiert nicht!");
-      }
-    }
-  }
+  useEffect(() => { ... }, [roomCode]);
+  useEffect(() => { ... }, [gameStarted, roomCode, playerName]);
+  async function startGame() { ... }
+  function vote(name) { ... }
 
-  async function joinRoom() {
-    if (playerName && roomCode && !hasJoined && players.length < 8) {
-      const playerRef = push(ref(db, `rooms/${roomCode}/players`));
-      await set(playerRef, { name: playerName, id: playerRef.key });
-      const playersSnapshot = await get(ref(db, `rooms/${roomCode}/players`));
-      const playersData = playersSnapshot.val();
-      if (playersData && Object.keys(playersData).length === 1) {
-        update(ref(db, `rooms/${roomCode}`), { hostId: playerRef.key });
-      }
-      setHasJoined(true);
-    }
-  }
+  return (
+    <div className="flex flex-col items-center p-10 min-h-screen bg-gradient-to-br from-blue-500 to-blue-800 text-white text-4xl">
+      {!gameStarted ? (
+        <>
+          <h1 className="text-8xl font-extrabold mb-10">Anime Imposter 🎭</h1>
+          <h2 className="text-6xl mb-6">Raumcode: {roomCode}</h2>
+          <div className="text-5xl mb-4">Spieler ({players.length}/8):</div>
+          {players.map((player) => (
+            <div key={player.id} className="text-3xl">
+              {player.name} {player.id === hostId && "(Host)"}
+            </div>
+          ))}
+          {playerName && players.find(p => p.name === playerName && p.id === hostId) && (
+            <button onClick={startGame} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded text-4xl mt-10">
+              Spiel starten
+            </button>
+          )}
+        </>
+      ) : (
+        <>
+          <h1 className="text-8xl font-extrabold mb-10">Deine Rolle:</h1>
+          <div className="bg-blue-700 p-16 rounded-lg text-6xl font-bold">
+            {myRole || "Wird geladen..."}
+          </div>
 
-  useEffect(() => {
-    if (roomCode) {
-      const roomRef = ref(db, `rooms/${roomCode}`);
-      onValue(roomRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          setHostId(data.hostId);
-          setGameStarted(data.gameStarted);
-        }
-      });
+          <div className="mt-16">
+            <h3 className="text-5xl mb-6">Wähle den Imposter:</h3>
+            {players.map((player) => (
+              <button
+                key={player.id}
+                onClick={() => vote(player.name)}
+                disabled={votedPlayer !== ""}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded text-3xl m-4"
+              >
+                {player.name}
+              </button>
+            ))}
+          </div>
 
-      const playersRef = ref(db, `rooms/${roomCode}/players`);
-      onValue(playersRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          const playerList = Object.values(data);
-          setPlayers(playerList);
-        }
-      });
-
-      const votesRef = ref(db, `rooms/${roomCode}/votes`);
-      onValue(votesRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          setVotes(data);
-        }
-      });
-    }
-  }, [roomCode]);
-
-  useEffect(() => {
-    if (gameStarted && roomCode && playerName) {
-      const playersRef = ref(db, `rooms/${roomCode}/players`);
-      get(playersRef).then((snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          const playerList = Object.values(data);
-          const me = playerList.find(p => p.name === playerName);
-          if (me && me.role) {
-            setMyRole(me.role);
-          }
-        }
-      });
-    }
-  }, [gameStarted, roomCode, playerName]);
-
-  async function startGame() {
-    if (!players.length) return;
-    const randomCharacter = animeCharacters[Math.floor(Math.random() * animeCharacters.length)];
-    const imposterIndex = Math.floor(Math.random() * players.length);
-    const assignedRoles = players.map((player, index) => ({
-      ...player,
-      role: index === imposterIndex ? "Imposter" : randomCharacter
-    }));
-    assignedRoles.forEach((player) => {
-      if (player && player.id && player.role) {
-        update(ref(db, `rooms/${roomCode}/players/${player.id}`), { role: player.role });
-      }
-    });
-    await update(ref(db, `rooms/${roomCode}`), { gameStarted: true });
-  }
-
-  function vote(name) {
-    if (roomCode) {
-      const voteRef = ref(db, `rooms/${roomCode}/votes/${name}`);
-      set(voteRef, (votes[name] || 0) + 1);
-      setVotedPlayer(name);
-    }
-  }
-
-  return ( ... ); // (Rest deines Codes bleibt unverändert)
+          {votedPlayer && (
+            <div className="mt-10">
+              <h4 className="text-4xl">Du hast abgestimmt für: {votedPlayer}</h4>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
 }
