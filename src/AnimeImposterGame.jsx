@@ -67,6 +67,7 @@ export default function AnimeImposterGame() {
   const [votedPlayer, setVotedPlayer] = useState("");
   const [votes, setVotes] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
+  const [hasJoined, setHasJoined] = useState(false);
 
   function createRoom() {
     const newRoomCode = uuidv4().slice(0, 5).toUpperCase();
@@ -78,15 +79,8 @@ export default function AnimeImposterGame() {
     });
   }
 
-  function joinRoom() {
-    if (playerName && roomCode) {
-      const playerRef = push(ref(db, `rooms/${roomCode}/players`));
-      set(playerRef, { name: playerName, id: playerRef.key });
-    }
-  }
-
   async function joinExistingRoom() {
-    if (playerName && joinRoomCode) {
+    if (joinRoomCode) {
       const roomRef = ref(db, `rooms/${joinRoomCode.toUpperCase()}`);
       const snapshot = await get(roomRef);
       if (snapshot.exists()) {
@@ -95,6 +89,14 @@ export default function AnimeImposterGame() {
       } else {
         setErrorMessage("Raum existiert nicht!");
       }
+    }
+  }
+
+  function joinRoom() {
+    if (playerName && roomCode && !hasJoined && players.length < 8) {
+      const playerRef = push(ref(db, `rooms/${roomCode}/players`));
+      set(playerRef, { name: playerName, id: playerRef.key });
+      setHasJoined(true);
     }
   }
 
@@ -152,7 +154,6 @@ export default function AnimeImposterGame() {
           <h1 className="text-8xl font-extrabold mb-10">Anime Imposter 🎭</h1>
           <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl mb-6" onClick={createRoom}>Neuen Raum erstellen</button>
           <input placeholder="Raumcode eingeben" value={joinRoomCode} onChange={e => setJoinRoomCode(e.target.value)} className="my-4 text-black text-3xl p-6 w-full rounded" />
-          <input placeholder="Dein Name" value={playerName} onChange={e => setPlayerName(e.target.value)} className="my-4 text-black text-3xl p-6 w-full rounded" />
           <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl w-full" onClick={joinExistingRoom}>Bestehendem Raum beitreten</button>
           {errorMessage && <div className="text-red-400 text-3xl mt-4">{errorMessage}</div>}
         </motion.div>
@@ -161,14 +162,22 @@ export default function AnimeImposterGame() {
       {roomCode && !gameStarted && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="w-full max-w-4xl">
           <h2 className="text-6xl mb-6">Raumcode: {roomCode}</h2>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl w-full mb-4" onClick={joinRoom}>Beitreten</button>
+          {!hasJoined && players.length < 8 && (
+            <>
+              <input placeholder="Dein Name" value={playerName} onChange={e => setPlayerName(e.target.value)} className="my-4 text-black text-3xl p-6 w-full rounded" />
+              <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl w-full mb-4" onClick={joinRoom}>Beitreten</button>
+            </>
+          )}
+          {hasJoined && (
+            <div className="text-4xl mb-4">Warte auf weitere Spieler...</div>
+          )}
           <div className="mt-10">
-            <h3 className="text-5xl mb-4">Spieler:</h3>
+            <h3 className="text-5xl mb-4">Spieler ({players.length}/8):</h3>
             {players.map((player, idx) => (
               <div key={idx} className="text-3xl">{player.name}</div>
             ))}
           </div>
-          {players.length >= 3 && (
+          {players.length >= 3 && players.length <= 8 && hasJoined && (
             <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl w-full mt-10" onClick={startGame}>Spiel starten</button>
           )}
         </motion.div>
