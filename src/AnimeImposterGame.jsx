@@ -75,6 +75,7 @@ export default function AnimeImposterGame() {
         const data = snapshot.val();
         if (data) {
           setHostId(data.hostId);
+          setGameStarted(data.gameStarted);
         }
       });
 
@@ -110,9 +111,7 @@ export default function AnimeImposterGame() {
         update(ref(db, `rooms/${roomCode}/players/${player.id}`), { role: player.role });
       }
     });
-    update(ref(db, `rooms/${roomCode}`), { gameStarted: true });
-    const myAssignedRole = assignedRoles.find(p => p.name === playerName)?.role;
-    setMyRole(myAssignedRole);
+    await update(ref(db, `rooms/${roomCode}`), { gameStarted: true });
   }
 
   function vote(name) {
