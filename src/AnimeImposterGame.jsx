@@ -32,6 +32,27 @@ export default function AnimeImposterGame() {
   const [hostId, setHostId] = useState(null);
 
   useEffect(() => {
+    if (roomCode) {
+      const roomRef = ref(db, `rooms/${roomCode}`);
+      onValue(roomRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          setHostId(data.hostId);
+          setGameStarted(data.gameStarted);
+        }
+      });
+
+      const playersRef = ref(db, `rooms/${roomCode}/players`);
+      onValue(playersRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          setPlayers(Object.values(data));
+        }
+      });
+    }
+  }, [roomCode]);
+
+  useEffect(() => {
     if (gameStarted && roomCode && playerName) {
       const playersRef = ref(db, `rooms/${roomCode}/players`);
       get(playersRef).then((snapshot) => {
@@ -46,6 +67,43 @@ export default function AnimeImposterGame() {
       });
     }
   }, [gameStarted, roomCode, playerName]);
+
+  async function createRoom() {
+    const newRoomCode = uuidv4().slice(0, 5).toUpperCase();
+    setRoomCode(newRoomCode);
+    await set(ref(db, `rooms/${newRoomCode}`), {
+      players: [],
+      gameStarted: false,
+      votes: {},
+      hostId: null,
+    });
+  }
+
+  async function joinExistingRoom() {
+    if (joinRoomCode) {
+      const roomRef = ref(db, `rooms/${joinRoomCode.toUpperCase()}`);
+      const snapshot = await get(roomRef);
+      if (snapshot.exists()) {
+        setRoomCode(joinRoomCode.toUpperCase());
+        setErrorMessage("");
+      } else {
+        setErrorMessage("Raum existiert nicht!");
+      }
+    }
+  }
+
+  async function joinRoom() {
+    if (playerName && roomCode && !hasJoined && players.length < 8) {
+      const playerRef = push(ref(db, `rooms/${roomCode}/players`));
+      await set(playerRef, { name: playerName, id: playerRef.key });
+      const playersSnapshot = await get(ref(db, `rooms/${roomCode}/players`));
+      const playersData = playersSnapshot.val();
+      if (playersData && Object.keys(playersData).length === 1) {
+        update(ref(db, `rooms/${roomCode}`), { hostId: playerRef.key });
+      }
+      setHasJoined(true);
+    }
+  }
 
   async function startGame() {
     if (!players.length) return;
@@ -73,23 +131,40 @@ export default function AnimeImposterGame() {
 
   return (
     <div className="flex flex-col items-center p-10 min-h-screen bg-gradient-to-br from-blue-500 to-blue-800 text-white text-4xl">
-      {!gameStarted ? (
+      {!roomCode && (
         <>
           <h1 className="text-8xl font-extrabold mb-10">Anime Imposter 🎭</h1>
+          <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl mb-6" onClick={createRoom}>Neuen Raum erstellen</button>
+          <input placeholder="Raumcode eingeben" value={joinRoomCode} onChange={e => setJoinRoomCode(e.target.value)} className="my-4 text-black text-3xl p-6 w-full rounded" />
+          <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl w-full" onClick={joinExistingRoom}>Bestehendem Raum beitreten</button>
+          {errorMessage && <div className="text-red-400 text-3xl mt-4">{errorMessage}</div>}
+        </>
+      )}
+
+      {roomCode && !gameStarted && (
+        <>
           <h2 className="text-6xl mb-6">Raumcode: {roomCode}</h2>
+          {!hasJoined && players.length < 8 && (
+            <>
+              <input placeholder="Dein Name" value={playerName} onChange={e => setPlayerName(e.target.value)} className="my-4 text-black text-3xl p-6 w-full rounded" />
+              <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl w-full mb-4" onClick={joinRoom}>Beitreten</button>
+            </>
+          )}
           <div className="text-5xl mb-4">Spieler ({players.length}/8):</div>
           {players.map((player) => (
             <div key={player.id} className="text-3xl">
               {player.name} {player.id === hostId && "(Host)"}
             </div>
           ))}
-          {playerName && players.find(p => p.name === playerName && p.id === hostId) && (
-            <button onClick={startGame} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded text-4xl mt-10">
+          {players.length >= 3 && players.length <= 8 && hasJoined && players.find(p => p.name === playerName && p.id === hostId) && (
+            <button onClick={startGame} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl mt-10">
               Spiel starten
             </button>
           )}
         </>
-      ) : (
+      )}
+
+      {gameStarted && (
         <>
           <h1 className="text-8xl font-extrabold mb-10">Deine Rolle:</h1>
           <div className="bg-blue-700 p-16 rounded-lg text-6xl font-bold">
