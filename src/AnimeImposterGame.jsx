@@ -52,7 +52,6 @@ export default function AnimeImposterGame() {
         const data = snapshot.val();
         if (data) {
           setPlayers(Object.values(data));
-  
           const me = Object.values(data).find(p => p.name === playerName);
           if (me && me.role) {
             setMyRole(me.role);
@@ -66,6 +65,7 @@ export default function AnimeImposterGame() {
       };
     }
   }, [roomCode, playerName]);
+  
   
 
   useEffect(() => {
@@ -209,96 +209,100 @@ export default function AnimeImposterGame() {
 
   return (
     <div className="flex flex-col items-center p-10 min-h-screen bg-gradient-to-br from-blue-500 to-blue-800 text-white text-4xl">
-      {!roomCode && (
-        <>
-          <h1 className="text-8xl font-extrabold mb-10">Anime Imposter 🎭</h1>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl mb-6" onClick={createRoom}>Neuen Raum erstellen</button>
-          <input placeholder="Raumcode eingeben" value={joinRoomCode} onChange={e => setJoinRoomCode(e.target.value)} className="my-4 text-black text-3xl p-6 w-full rounded" />
-          <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl w-full" onClick={joinExistingRoom}>Bestehendem Raum beitreten</button>
-          {errorMessage && <div className="text-red-400 text-3xl mt-4">{errorMessage}</div>}
-        </>
-      )}
-
-      {roomCode && !gameStarted && (
-        <>
-          <h2 className="text-6xl mb-6">Raumcode: {roomCode}</h2>
-          {!hasJoined && players.length < 8 && (
-            <>
-              <input placeholder="Dein Name" value={playerName} onChange={e => setPlayerName(e.target.value)} className="my-4 text-black text-3xl p-6 w-full rounded" />
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl w-full mb-4" onClick={joinRoom}>Beitreten</button>
-            </>
-          )}
-          <div className="text-5xl mb-4">Spieler ({players.length}/8):</div>
-          {players.map((player) => (
-            <div key={player.id} className="text-3xl">
-              {player.name} {player.id === hostId && "(Host)"}
-            </div>
-          ))}
-          {players.length >= 3 && players.length <= 8 && hasJoined && players.find(p => p.name === playerName && p.id === hostId) && (
-            <button onClick={startGame} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl mt-10">
-              Spiel starten
-            </button>
-          )}
-        </>
-      )}
-
-      {gameStarted && !showResults && (
-        <>
-          <h1 className="text-8xl font-extrabold mb-10">Deine Rolle:</h1>
-          <motion.div className="bg-blue-700 p-16 rounded-lg text-6xl font-bold" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            {myRole || "Wird geladen..."}
-          </motion.div>
-
-          <div className="mt-16">
-            <h3 className="text-5xl mb-6">Wähle den Imposter:</h3>
-            {players.map((player) => (
-              <button
-                key={player.id}
-                onClick={() => vote(player.name)}
-                disabled={votedPlayer !== ""}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded text-3xl m-4"
-              >
-                {player.name}
-              </button>
-            ))}
-          </div>
-
-          {votedPlayer && (
-            <div className="mt-10 text-center">
-              <h4 className="text-4xl mb-4">Du hast abgestimmt für: {votedPlayer}</h4>
-              <p className="text-3xl mb-6">Warte, bis alle Spieler abgestimmt haben...</p>
-
-              <div className="w-full bg-white rounded-full h-8 mt-8">
-                <div
-                  className="bg-green-600 h-8 rounded-full"
-                  style={{
-                    width: `${(votesCount / players.length) * 100}%`,
-                    transition: "width 0.5s ease-in-out"
-                  }}
-                ></div>
-              </div>
-
-              <p className="text-3xl mt-4">
-                {votesCount}/{players.length} Stimmen abgegeben
-              </p>
-            </div>
-          )}
-        </>
-      )}
-
-      {showResults && (
+      {showResults ? (
+        // Wenn Ergebnisse angezeigt werden:
         <div className="mt-16 text-center">
           <h2 className="text-6xl mb-10">Ergebnisse</h2>
           <p className="text-5xl mb-6">Am meisten Votes: {winner}</p>
           <p className="text-5xl mb-6">Der Imposter war: {imposterName}</p>
-
+  
           {players.find(p => p.name === playerName && p.id === hostId) && (
             <button onClick={startNewGame} className="mt-10 bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-10 rounded text-4xl">
               Neues Spiel starten
             </button>
           )}
         </div>
+      ) : (
+        <>
+          {!roomCode && (
+            <>
+              <h1 className="text-8xl font-extrabold mb-10">Anime Imposter 🎭</h1>
+              <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl mb-6" onClick={createRoom}>Neuen Raum erstellen</button>
+              <input placeholder="Raumcode eingeben" value={joinRoomCode} onChange={e => setJoinRoomCode(e.target.value)} className="my-4 text-black text-3xl p-6 w-full rounded" />
+              <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl w-full" onClick={joinExistingRoom}>Bestehendem Raum beitreten</button>
+              {errorMessage && <div className="text-red-400 text-3xl mt-4">{errorMessage}</div>}
+            </>
+          )}
+  
+          {roomCode && !gameStarted && (
+            <>
+              <h2 className="text-6xl mb-6">Raumcode: {roomCode}</h2>
+              {!hasJoined && players.length < 8 && (
+                <>
+                  <input placeholder="Dein Name" value={playerName} onChange={e => setPlayerName(e.target.value)} className="my-4 text-black text-3xl p-6 w-full rounded" />
+                  <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl w-full mb-4" onClick={joinRoom}>Beitreten</button>
+                </>
+              )}
+              <div className="text-5xl mb-4">Spieler ({players.length}/8):</div>
+              {players.map((player) => (
+                <div key={player.id} className="text-3xl">
+                  {player.name} {player.id === hostId && "(Host)"}
+                </div>
+              ))}
+              {players.length >= 3 && players.length <= 8 && hasJoined && players.find(p => p.name === playerName && p.id === hostId) && (
+                <button onClick={startGame} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl mt-10">
+                  Spiel starten
+                </button>
+              )}
+            </>
+          )}
+  
+          {gameStarted && (
+            <>
+              <h1 className="text-8xl font-extrabold mb-10">Deine Rolle:</h1>
+              <motion.div className="bg-blue-700 p-16 rounded-lg text-6xl font-bold" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                {myRole || "Wird geladen..."}
+              </motion.div>
+  
+              <div className="mt-16">
+                <h3 className="text-5xl mb-6">Wähle den Imposter:</h3>
+                {players.map((player) => (
+                  <button
+                    key={player.id}
+                    onClick={() => vote(player.name)}
+                    disabled={votedPlayer !== ""}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded text-3xl m-4"
+                  >
+                    {player.name}
+                  </button>
+                ))}
+              </div>
+  
+              {votedPlayer && (
+                <div className="mt-10 text-center">
+                  <h4 className="text-4xl mb-4">Du hast abgestimmt für: {votedPlayer}</h4>
+                  <p className="text-3xl mb-6">Warte, bis alle Spieler abgestimmt haben...</p>
+  
+                  <div className="w-full bg-white rounded-full h-8 mt-8">
+                    <div
+                      className="bg-green-600 h-8 rounded-full"
+                      style={{
+                        width: `${(votesCount / players.length) * 100}%`,
+                        transition: "width 0.5s ease-in-out"
+                      }}
+                    ></div>
+                  </div>
+  
+                  <p className="text-3xl mt-4">
+                    {votesCount}/{players.length} Stimmen abgegeben
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+        </>
       )}
     </div>
   );
+  
 }
