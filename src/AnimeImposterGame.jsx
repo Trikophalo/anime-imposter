@@ -100,6 +100,7 @@ export default function AnimeImposterGame() {
   
           await update(ref(db, `rooms/${roomCode}`), { gameStarted: false });
           setShowResults(true);
+          
 
         }
       });
@@ -170,8 +171,31 @@ export default function AnimeImposterGame() {
   }
 
   async function startNewGame() {
-    await startGame();
+    // Reset votes and players' roles
+    await update(ref(db, `rooms/${roomCode}`), { votes: {}, gameStarted: false });
+  
+    const playersSnapshot = await get(ref(db, `rooms/${roomCode}/players`));
+    const playersData = playersSnapshot.val();
+    const playerList = playersData ? Object.values(playersData) : [];
+  
+    if (!playerList.length) return;
+  
+    const randomCharacter = animeCharacters[Math.floor(Math.random() * animeCharacters.length)];
+    const imposterIndex = Math.floor(Math.random() * playerList.length);
+  
+    for (let i = 0; i < playerList.length; i++) {
+      const player = playerList[i];
+      await update(ref(db, `rooms/${roomCode}/players/${player.id}`), {
+        role: i === imposterIndex ? "Imposter" : randomCharacter
+      });
+    }
+  
+    await update(ref(db, `rooms/${roomCode}`), { gameStarted: true });
+    setShowResults(false);
+    setVotedPlayer("");
+    setVotes({});
   }
+  
 
   async function vote(name) {
     if (roomCode && !votedPlayer) {
