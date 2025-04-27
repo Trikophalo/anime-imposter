@@ -228,14 +228,14 @@ export default function AnimeImposterGame() {
     }
   }
 
-  // Verwende inline-Styles, die definitiv angewendet werden sollten
+  // Updated styles
   const mainContainerStyle = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     padding: "40px",
     minHeight: "100vh",
-    backgroundColor: "#0a0a4a", // Sehr dunkles Blau
+    backgroundColor: "#1a1a6a", // Lighter background color
     color: "white",
     fontSize: "36px"
   };
@@ -248,25 +248,27 @@ export default function AnimeImposterGame() {
     textShadow: "3px 3px 6px rgba(0,0,0,0.5)"
   };
 
+  // Updated button style - shorter height
   const buttonStyle = {
     backgroundColor: "#39c2ff", // Sehr helles Blau
     color: "white",
     fontWeight: "bold",
-    padding: "20px 40px",
-    borderRadius: "16px",
-    fontSize: "36px",
+    padding: "15px 30px", // Reduced padding for shorter buttons
+    borderRadius: "12px",
+    fontSize: "32px", // Slightly smaller font
     margin: "10px",
     cursor: "pointer",
     boxShadow: "0 4px 8px rgba(0,0,0,0.3)",
     border: "none",
-    width: "100%"
+    width: "100%",
+    transition: "background-color 0.3s ease" // Smooth transition for hover effect
   };
 
   const inputStyle = {
-    padding: "20px",
+    padding: "15px", // Reduced padding for consistency
     fontSize: "32px",
     width: "100%",
-    borderRadius: "16px",
+    borderRadius: "12px",
     margin: "20px 0",
     border: "none",
     color: "black"
@@ -284,7 +286,12 @@ export default function AnimeImposterGame() {
             <p style={{fontSize: "48px", marginTop: "30px"}}>Nächste Runde startet in {countdown} Sekunden...</p>
           ) : (
             players.find(p => p.name === playerName && p.id === hostId) && (
-              <button onClick={startNewGame} style={{...buttonStyle, marginTop: "40px"}}>
+              <button 
+                onClick={startNewGame} 
+                style={{...buttonStyle, marginTop: "40px"}}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#2ba3db"} // Darker on hover
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#39c2ff"} // Back to original
+              >
                 Neues Spiel starten
               </button>
             )
@@ -295,9 +302,23 @@ export default function AnimeImposterGame() {
           {!roomCode && (
             <>
               <h1 style={titleStyle}>SUPER ANIME IMPOSTER GAME 2.0! 🎮</h1>
-              <button style={buttonStyle} onClick={createRoom}>Neuen Raum erstellen</button>
+              <button 
+                style={buttonStyle} 
+                onClick={createRoom}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#2ba3db"} // Darker on hover
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#39c2ff"} // Back to original
+              >
+                Neuen Raum erstellen
+              </button>
               <input placeholder="Raumcode eingeben" value={joinRoomCode} onChange={e => setJoinRoomCode(e.target.value)} style={inputStyle} />
-              <button style={buttonStyle} onClick={joinExistingRoom}>Bestehendem Raum beitreten</button>
+              <button 
+                style={buttonStyle} 
+                onClick={joinExistingRoom}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#2ba3db"} // Darker on hover
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#39c2ff"} // Back to original
+              >
+                Bestehendem Raum beitreten
+              </button>
               {errorMessage && <div style={{color: "#ff4444", fontSize: "32px", marginTop: "20px", fontWeight: "bold"}}>{errorMessage}</div>}
             </>
           )}
@@ -308,7 +329,14 @@ export default function AnimeImposterGame() {
               {!hasJoined && players.length < 8 && (
                 <>
                   <input placeholder="Dein Name" value={playerName} onChange={e => setPlayerName(e.target.value)} style={inputStyle} />
-                  <button style={buttonStyle} onClick={joinRoom}>Beitreten</button>
+                  <button 
+                    style={buttonStyle} 
+                    onClick={joinRoom}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#2ba3db"} // Darker on hover
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#39c2ff"} // Back to original
+                  >
+                    Beitreten
+                  </button>
                 </>
               )}
               <div style={{fontSize: "60px", marginBottom: "20px", fontWeight: "bold"}}>Spieler ({players.length}/8):</div>
@@ -318,7 +346,12 @@ export default function AnimeImposterGame() {
                 </div>
               ))}
               {players.length >= 3 && players.length <= 8 && hasJoined && players.find(p => p.name === playerName && p.id === hostId) && (
-                <button onClick={startGame} style={{...buttonStyle, marginTop: "40px"}}>
+                <button 
+                  onClick={startGame} 
+                  style={{...buttonStyle, marginTop: "40px"}}
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#2ba3db"} // Darker on hover
+                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#39c2ff"} // Back to original
+                >
                   Spiel starten
                 </button>
               )}
@@ -348,7 +381,7 @@ export default function AnimeImposterGame() {
                 <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px"}}>
                   {players.map((player) => (
                     <motion.button
-                      whileHover={{ scale: 1.1 }}
+                      whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       key={player.id}
                       onClick={() => vote(player.name)}
@@ -357,6 +390,16 @@ export default function AnimeImposterGame() {
                         ...buttonStyle,
                         opacity: votedPlayer ? 0.6 : 1,
                         backgroundColor: votedPlayer === player.name ? "#ff3366" : "#39c2ff"
+                      }}
+                      onMouseOver={(e) => {
+                        if (votedPlayer !== player.name) {
+                          e.currentTarget.style.backgroundColor = "#2ba3db"; // Darker on hover
+                        }
+                      }}
+                      onMouseOut={(e) => {
+                        if (votedPlayer !== player.name) {
+                          e.currentTarget.style.backgroundColor = "#39c2ff"; // Back to original
+                        }
                       }}
                     >
                       {player.name}
