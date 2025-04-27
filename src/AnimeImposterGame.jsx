@@ -5,56 +5,17 @@ import { db } from "./firebaseConfig";
 import { ref, set, push, onValue, update, get } from "firebase/database";
 
 const animeCharacters = [
-  "Naruto Uzumaki",
-  "Sasuke Uchiha",
-  "Sakura Haruno",
-  "Kakashi Hatake",
-  "Monkey D. Luffy",
-  "Roronoa Zoro",
-  "Nami",
-  "Sanji",
-  "Tony Tony Chopper",
-  "Portgas D. Ace",
-  "Goku",
-  "Vegeta",
-  "Piccolo",
-  "Gohan",
-  "Frieza",
-  "Light Yagami",
-  "L Lawliet",
-  "Ryuk",
-  "Edward Elric",
-  "Alphonse Elric",
-  "Roy Mustang",
-  "Winry Rockbell",
-  "Ichigo Kurosaki",
-  "Rukia Kuchiki",
-  "Uryu Ishida",
-  "Orihime Inoue",
-  "Saitama",
-  "Genos",
-  "Tatsumaki",
-  "Mumen Rider",
-  "Levi Ackerman",
-  "Eren Yeager",
-  "Mikasa Ackerman",
-  "Armin Arlert",
-  "Erwin Smith",
-  "Rem",
-  "Emilia",
-  "Subaru Natsuki",
-  "Natsu Dragneel",
-  "Lucy Heartfilia",
-  "Gray Fullbuster",
-  "Erza Scarlet",
-  "Saber",
-  "Kirito",
-  "Asuna",
-  "Zero Two",
-  "Ken Kaneki",
-  "Touka Kirishima",
-  "Shoto Todoroki",
-  "Izuku Midoriya"
+  "Naruto Uzumaki", "Sasuke Uchiha", "Sakura Haruno", "Kakashi Hatake",
+  "Monkey D. Luffy", "Roronoa Zoro", "Nami", "Sanji", "Tony Tony Chopper",
+  "Portgas D. Ace", "Goku", "Vegeta", "Piccolo", "Gohan", "Frieza",
+  "Light Yagami", "L Lawliet", "Ryuk", "Edward Elric", "Alphonse Elric",
+  "Roy Mustang", "Winry Rockbell", "Ichigo Kurosaki", "Rukia Kuchiki",
+  "Uryu Ishida", "Orihime Inoue", "Saitama", "Genos", "Tatsumaki",
+  "Mumen Rider", "Levi Ackerman", "Eren Yeager", "Mikasa Ackerman",
+  "Armin Arlert", "Erwin Smith", "Rem", "Emilia", "Subaru Natsuki",
+  "Natsu Dragneel", "Lucy Heartfilia", "Gray Fullbuster", "Erza Scarlet",
+  "Saber", "Kirito", "Asuna", "Zero Two", "Ken Kaneki", "Touka Kirishima",
+  "Shoto Todoroki", "Izuku Midoriya"
 ];
 
 export default function AnimeImposterGame() {
@@ -68,6 +29,7 @@ export default function AnimeImposterGame() {
   const [votes, setVotes] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
   const [hasJoined, setHasJoined] = useState(false);
+  const [hostId, setHostId] = useState(null);
 
   function createRoom() {
     const newRoomCode = uuidv4().slice(0, 5).toUpperCase();
@@ -75,7 +37,8 @@ export default function AnimeImposterGame() {
     set(ref(db, `rooms/${newRoomCode}`), {
       players: [],
       gameStarted: false,
-      votes: {}
+      votes: {},
+      hostId: null
     });
   }
 
@@ -92,16 +55,29 @@ export default function AnimeImposterGame() {
     }
   }
 
-  function joinRoom() {
+  async function joinRoom() {
     if (playerName && roomCode && !hasJoined && players.length < 8) {
       const playerRef = push(ref(db, `rooms/${roomCode}/players`));
-      set(playerRef, { name: playerName, id: playerRef.key });
+      await set(playerRef, { name: playerName, id: playerRef.key });
+      const playersSnapshot = await get(ref(db, `rooms/${roomCode}/players`));
+      const playersData = playersSnapshot.val();
+      if (playersData && Object.keys(playersData).length === 1) {
+        update(ref(db, `rooms/${roomCode}`), { hostId: playerRef.key });
+      }
       setHasJoined(true);
     }
   }
 
   useEffect(() => {
     if (roomCode) {
+      const roomRef = ref(db, `rooms/${roomCode}`);
+      onValue(roomRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          setHostId(data.hostId);
+        }
+      });
+
       const playersRef = ref(db, `rooms/${roomCode}/players`);
       onValue(playersRef, (snapshot) => {
         const data = snapshot.val();
@@ -121,7 +97,8 @@ export default function AnimeImposterGame() {
     }
   }, [roomCode]);
 
-  function startGame() {
+  async function startGame() {
+    if (!players.length) return;
     const randomCharacter = animeCharacters[Math.floor(Math.random() * animeCharacters.length)];
     const imposterIndex = Math.floor(Math.random() * players.length);
     const assignedRoles = players.map((player, index) => ({
@@ -134,7 +111,6 @@ export default function AnimeImposterGame() {
       }
     });
     update(ref(db, `rooms/${roomCode}`), { gameStarted: true });
-    setGameStarted(true);
     const myAssignedRole = assignedRoles.find(p => p.name === playerName)?.role;
     setMyRole(myAssignedRole);
   }
@@ -174,10 +150,12 @@ export default function AnimeImposterGame() {
           <div className="mt-10">
             <h3 className="text-5xl mb-4">Spieler ({players.length}/8):</h3>
             {players.map((player, idx) => (
-              <div key={idx} className="text-3xl">{player.name}</div>
+              <div key={idx} className="text-3xl">
+                {player.name} {player.id === hostId ? "(Host)" : ""}
+              </div>
             ))}
           </div>
-          {players.length >= 3 && players.length <= 8 && hasJoined && (
+          {players.length >= 3 && players.length <= 8 && hasJoined && players.find(p => p.id === hostId && p.name === playerName) && (
             <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl w-full mt-10" onClick={startGame}>Spiel starten</button>
           )}
         </motion.div>
