@@ -30,6 +30,7 @@ export default function AnimeImposterGame() {
   const [errorMessage, setErrorMessage] = useState("");
   const [hasJoined, setHasJoined] = useState(false);
   const [hostId, setHostId] = useState(null);
+  const [countdown, setCountdown] = useState(0);
 
   useEffect(() => {
     if (roomCode) {
@@ -107,6 +108,21 @@ export default function AnimeImposterGame() {
 
   async function startGame() {
     if (!players.length) return;
+    setCountdown(3);
+
+    const interval = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          actuallyStartGame();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }
+
+  async function actuallyStartGame() {
     const randomCharacter = animeCharacters[Math.floor(Math.random() * animeCharacters.length)];
     const imposterIndex = Math.floor(Math.random() * players.length);
     const assignedRoles = players.map((player, index) => ({
@@ -141,7 +157,7 @@ export default function AnimeImposterGame() {
         </>
       )}
 
-      {roomCode && !gameStarted && (
+      {roomCode && !gameStarted && countdown === 0 && (
         <>
           <h2 className="text-6xl mb-6">Raumcode: {roomCode}</h2>
           {!hasJoined && players.length < 8 && (
@@ -164,7 +180,13 @@ export default function AnimeImposterGame() {
         </>
       )}
 
-      {gameStarted && (
+      {countdown > 0 && (
+        <div className="text-8xl font-bold mt-20">
+          Spiel startet in {countdown}...
+        </div>
+      )}
+
+      {gameStarted && countdown === 0 && (
         <>
           <h1 className="text-8xl font-extrabold mb-10">Deine Rolle:</h1>
           <div className="bg-blue-700 p-16 rounded-lg text-6xl font-bold">
