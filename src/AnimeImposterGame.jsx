@@ -38,15 +38,15 @@ export default function AnimeImposterGame() {
     if (roomCode) {
       const roomRef = ref(db, `rooms/${roomCode}`);
       const playersRef = ref(db, `rooms/${roomCode}/players`);
-
+  
       const unsubscribeRoom = onValue(roomRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
           setHostId(data.hostId);
-          setGameStarted(data.gameStarted);
+          setGameStarted(data.gameStarted); // <-- Hier reagieren ALLE automatisch
         }
       });
-
+  
       const unsubscribePlayers = onValue(playersRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
@@ -57,13 +57,14 @@ export default function AnimeImposterGame() {
           }
         }
       });
-
+  
       return () => {
         unsubscribeRoom();
         unsubscribePlayers();
       };
     }
   }, [roomCode, playerName]);
+  
 
   useEffect(() => {
     if (gameStarted && roomCode) {
@@ -162,8 +163,10 @@ export default function AnimeImposterGame() {
   async function startNewGame() {
     if (!players.length) return;
   
+    // 1. Erst votes löschen und gameStarted auf false setzen (Reset)
     await update(ref(db, `rooms/${roomCode}`), { votes: {}, gameStarted: false });
   
+    // 2. Neue Rollen verteilen
     const playersSnapshot = await get(ref(db, `rooms/${roomCode}/players`));
     const playersData = playersSnapshot.val();
     const playerList = playersData ? Object.values(playersData) : [];
@@ -178,12 +181,15 @@ export default function AnimeImposterGame() {
       });
     }
   
+    // 3. Jetzt gameStarted = true setzen -> ALLE bekommen neues Spiel!
     await update(ref(db, `rooms/${roomCode}`), { gameStarted: true });
   
+    // 4. Lokale Variablen zurücksetzen
     setShowResults(false);
     setVotedPlayer("");
     setVotesCount(0);
   }
+  
   
 
   async function vote(name) {
