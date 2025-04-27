@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { motion } from "framer-motion";
 import { db } from "./firebaseConfig";
-import { ref, set, push, onValue, update, get, remove } from "firebase/database";
+import { ref, set, push, onValue, update, get } from "firebase/database";
 
 const animeCharacters = [
   "Naruto Uzumaki", "Sasuke Uchiha", "Sakura Haruno", "Kakashi Hatake",
@@ -30,7 +30,8 @@ export default function AnimeImposterGame() {
   const [errorMessage, setErrorMessage] = useState("");
   const [hasJoined, setHasJoined] = useState(false);
   const [hostId, setHostId] = useState(null);
-  const [countdown, setCountdown] = useState(0);
+  const [showResults, setShowResults] = useState(false);
+  const [winner, setWinner] = useState("");
   const [imposterName, setImposterName] = useState("");
 
   useEffect(() => {
@@ -51,14 +52,6 @@ export default function AnimeImposterGame() {
           setPlayers(Object.values(data));
         }
       });
-
-      const votesRef = ref(db, `rooms/${roomCode}/votes`);
-      onValue(votesRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          setVotes(data);
-        }
-      });
     }
   }, [roomCode]);
 
@@ -77,25 +70,6 @@ export default function AnimeImposterGame() {
       });
     }
   }, [gameStarted, roomCode, playerName]);
-
-  useEffect(() => {
-    if (Object.keys(votes).length === players.length && players.length > 0) {
-      revealImposter();
-    }
-  }, [votes]);
-
-  async function revealImposter() {
-    const playersRef = ref(db, `rooms/${roomCode}/players`);
-    const snapshot = await get(playersRef);
-    if (snapshot.exists()) {
-      const playerList = Object.values(snapshot.val());
-      const imposter = playerList.find(player => player.role === "Imposter");
-      if (imposter) {
-        setImposterName(imposter.name);
-      }
-    }
-    await update(ref(db, `rooms/${roomCode}`), { gameStarted: false });
-  }
 
   async function createRoom() {
     const newRoomCode = uuidv4().slice(0, 5).toUpperCase();
@@ -136,42 +110,55 @@ export default function AnimeImposterGame() {
 
   async function startGame() {
     if (!players.length) return;
-    await remove(ref(db, `rooms/${roomCode}/votes`));
-    setCountdown(3);
-    setImposterName("");
-
-    const interval = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          actuallyStartGame();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  }
-
-  async function actuallyStartGame() {
     const randomCharacter = animeCharacters[Math.floor(Math.random() * animeCharacters.length)];
     const imposterIndex = Math.floor(Math.random() * players.length);
     const assignedRoles = players.map((player, index) => ({
       ...player,
       role: index === imposterIndex ? "Imposter" : randomCharacter
     }));
+
     assignedRoles.forEach((player) => {
       if (player && player.id && player.role) {
         update(ref(db, `rooms/${roomCode}/players/${player.id}`), { role: player.role });
       }
     });
-    await update(ref(db, `rooms/${roomCode}`), { gameStarted: true });
+
+    await update(ref(db, `rooms/${roomCode}`), { gameStarted: true, votes: {} });
+
+    setShowResults(false);
+    setVotedPlayer("");
+    setVotes({});
   }
 
-  function vote(name) {
-    if (roomCode) {
+  async function startNewGame() {
+    await startGame();
+  }
+
+  async function vote(name) {
+    if (roomCode && !votedPlayer) {
       const voteRef = ref(db, `rooms/${roomCode}/votes/${name}`);
-      set(voteRef, (votes[name] || 0) + 1);
+      await set(voteRef, (votes[name] || 0) + 1);
       setVotedPlayer(name);
+
+      const votesSnapshot = await get(ref(db, `rooms/${roomCode}/votes`));
+      const votesData = votesSnapshot.val();
+      if (votesData) {
+        const sortedVotes = Object.entries(votesData).sort((a, b) => b[1] - a[1]);
+        if (sortedVotes.length > 0) {
+          setWinner(sortedVotes[0][0]);
+        }
+      }
+
+      const playersSnapshot = await get(ref(db, `rooms/${roomCode}/players`));
+      const playersData = playersSnapshot.val();
+      if (playersData) {
+        const imposter = Object.values(playersData).find(p => p.role === "Imposter");
+        if (imposter) {
+          setImposterName(imposter.name);
+        }
+      }
+
+      setShowResults(true);
     }
   }
 
@@ -210,12 +197,12 @@ export default function AnimeImposterGame() {
         </>
       )}
 
-      {gameStarted && (
+      {gameStarted && !showResults && (
         <>
           <h1 className="text-8xl font-extrabold mb-10">Deine Rolle:</h1>
-          <div className="bg-blue-700 p-16 rounded-lg text-6xl font-bold">
+          <motion.div className="bg-blue-700 p-16 rounded-lg text-6xl font-bold" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             {myRole || "Wird geladen..."}
-          </div>
+          </motion.div>
 
           <div className="mt-16">
             <h3 className="text-5xl mb-6">Wähle den Imposter:</h3>
@@ -237,6 +224,20 @@ export default function AnimeImposterGame() {
             </div>
           )}
         </>
+      )}
+
+      {showResults && (
+        <div className="mt-16 text-center">
+          <h2 className="text-6xl mb-10">Ergebnisse</h2>
+          <p className="text-5xl mb-6">Am meisten Votes: {winner}</p>
+          <p className="text-5xl mb-6">Der Imposter war: {imposterName}</p>
+
+          {players.find(p => p.name === playerName && p.id === hostId) && (
+            <button onClick={startNewGame} className="mt-10 bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-10 rounded text-4xl">
+              Neues Spiel starten
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
