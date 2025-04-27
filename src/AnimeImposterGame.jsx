@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { motion } from "framer-motion";
 import { db } from "./firebaseConfig";
-import { ref, set, push, onValue, update, get } from "firebase/database";
+import { ref, set, push, onValue, update, get, remove } from "firebase/database";
 
 const animeCharacters = [
   "Naruto Uzumaki", "Sasuke Uchiha", "Sakura Haruno", "Kakashi Hatake",
@@ -31,6 +31,7 @@ export default function AnimeImposterGame() {
   const [hasJoined, setHasJoined] = useState(false);
   const [hostId, setHostId] = useState(null);
   const [countdown, setCountdown] = useState(0);
+  const [imposterName, setImposterName] = useState("");
 
   useEffect(() => {
     if (roomCode) {
@@ -48,6 +49,14 @@ export default function AnimeImposterGame() {
         const data = snapshot.val();
         if (data) {
           setPlayers(Object.values(data));
+        }
+      });
+
+      const votesRef = ref(db, `rooms/${roomCode}/votes`);
+      onValue(votesRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          setVotes(data);
         }
       });
     }
@@ -68,6 +77,25 @@ export default function AnimeImposterGame() {
       });
     }
   }, [gameStarted, roomCode, playerName]);
+
+  useEffect(() => {
+    if (Object.keys(votes).length === players.length && players.length > 0) {
+      revealImposter();
+    }
+  }, [votes]);
+
+  async function revealImposter() {
+    const playersRef = ref(db, `rooms/${roomCode}/players`);
+    const snapshot = await get(playersRef);
+    if (snapshot.exists()) {
+      const playerList = Object.values(snapshot.val());
+      const imposter = playerList.find(player => player.role === "Imposter");
+      if (imposter) {
+        setImposterName(imposter.name);
+      }
+    }
+    await update(ref(db, `rooms/${roomCode}`), { gameStarted: false });
+  }
 
   async function createRoom() {
     const newRoomCode = uuidv4().slice(0, 5).toUpperCase();
@@ -108,7 +136,9 @@ export default function AnimeImposterGame() {
 
   async function startGame() {
     if (!players.length) return;
+    await remove(ref(db, `rooms/${roomCode}/votes`));
     setCountdown(3);
+    setImposterName("");
 
     const interval = setInterval(() => {
       setCountdown(prev => {
@@ -157,7 +187,7 @@ export default function AnimeImposterGame() {
         </>
       )}
 
-      {roomCode && !gameStarted && countdown === 0 && (
+      {roomCode && !gameStarted && (
         <>
           <h2 className="text-6xl mb-6">Raumcode: {roomCode}</h2>
           {!hasJoined && players.length < 8 && (
@@ -180,13 +210,7 @@ export default function AnimeImposterGame() {
         </>
       )}
 
-      {countdown > 0 && (
-        <div className="text-8xl font-bold mt-20">
-          Spiel startet in {countdown}...
-        </div>
-      )}
-
-      {gameStarted && countdown === 0 && (
+      {gameStarted && (
         <>
           <h1 className="text-8xl font-extrabold mb-10">Deine Rolle:</h1>
           <div className="bg-blue-700 p-16 rounded-lg text-6xl font-bold">
