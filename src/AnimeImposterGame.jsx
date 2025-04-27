@@ -34,42 +34,42 @@ export default function AnimeImposterGame() {
   const [winner, setWinner] = useState("");
   const [imposterName, setImposterName] = useState("");
 
-  // Live-Daten hören
   useEffect(() => {
     if (roomCode) {
       const roomRef = ref(db, `rooms/${roomCode}`);
       const playersRef = ref(db, `rooms/${roomCode}/players`);
-
+  
       const unsubscribeRoom = onValue(roomRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
           setHostId(data.hostId);
           setGameStarted(data.gameStarted);
+  
+          // HIER neu einfügen:
           if (data.gameStarted) {
             setShowResults(false);
           }
-          
         }
       });
-
-      const unsubscribeRoom = onValue(roomRef, (snapshot) => {
+  
+      const unsubscribePlayers = onValue(playersRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
-          setHostId(data.hostId);
-          setGameStarted(data.gameStarted);
-      
-          if (data.gameStarted) {
-            setShowResults(false); // NEU HINZUFÜGEN!!
+          setPlayers(Object.values(data));
+          const me = Object.values(data).find(p => p.name === playerName);
+          if (me && me.role) {
+            setMyRole(me.role);
           }
         }
-      });      
-
+      });
+  
       return () => {
         unsubscribeRoom();
         unsubscribePlayers();
       };
     }
   }, [roomCode, playerName]);
+  
 
   // Votes live hören
   useEffect(() => {
