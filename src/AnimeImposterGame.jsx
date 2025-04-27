@@ -26,20 +26,19 @@ export default function AnimeImposterGame() {
   const [gameStarted, setGameStarted] = useState(false);
   const [myRole, setMyRole] = useState("");
   const [votedPlayer, setVotedPlayer] = useState("");
-  const [votes, setVotes] = useState({});
+  const [votesCount, setVotesCount] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
   const [hasJoined, setHasJoined] = useState(false);
   const [hostId, setHostId] = useState(null);
   const [showResults, setShowResults] = useState(false);
   const [winner, setWinner] = useState("");
   const [imposterName, setImposterName] = useState("");
-  const [votesCount, setVotesCount] = useState(0);
 
   useEffect(() => {
     if (roomCode) {
       const roomRef = ref(db, `rooms/${roomCode}`);
       const playersRef = ref(db, `rooms/${roomCode}/players`);
-  
+
       const unsubscribeRoom = onValue(roomRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
@@ -47,7 +46,7 @@ export default function AnimeImposterGame() {
           setGameStarted(data.gameStarted);
         }
       });
-  
+
       const unsubscribePlayers = onValue(playersRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
@@ -58,32 +57,30 @@ export default function AnimeImposterGame() {
           }
         }
       });
-  
+
       return () => {
         unsubscribeRoom();
         unsubscribePlayers();
       };
     }
   }, [roomCode, playerName]);
-  
-  
 
   useEffect(() => {
     if (gameStarted && roomCode) {
       const votesRef = ref(db, `rooms/${roomCode}/votes`);
       const playersRef = ref(db, `rooms/${roomCode}/players`);
-  
-      const unsubscribe = onValue(votesRef, async (snapshot) => {
+
+      const unsubscribeVotes = onValue(votesRef, async (snapshot) => {
         const votesData = snapshot.val();
-        const votesCount = votesData ? Object.keys(votesData).length : 0;
-        setVotesCount(votesCount);
-  
         const playersSnapshot = await get(playersRef);
         const playersData = playersSnapshot.val();
         const playerCount = playersData ? Object.keys(playersData).length : 0;
-  
-        if (votesCount >= playerCount && !showResults) {
-          // Nur auswerten wenn noch keine Ergebnisse angezeigt werden
+        const totalVotes = votesData ? Object.keys(votesData).length : 0;
+
+        setVotesCount(totalVotes);
+
+        if (totalVotes >= playerCount && !showResults) {
+          // Ergebnis berechnen
           const voteCounts = {};
           Object.values(votesData).forEach((votedName) => {
             voteCounts[votedName] = (voteCounts[votedName] || 0) + 1;
@@ -92,23 +89,21 @@ export default function AnimeImposterGame() {
           if (sortedVotes.length > 0) {
             setWinner(sortedVotes[0][0]);
           }
-  
+
           const imposter = Object.values(playersData).find(p => p.role === "Imposter");
           if (imposter) {
             setImposterName(imposter.name);
           }
-  
+
+          // Spiel stoppen
           await update(ref(db, `rooms/${roomCode}`), { gameStarted: false });
           setShowResults(true);
-          
-
         }
       });
-  
-      return () => unsubscribe();
+
+      return () => unsubscribeVotes();
     }
   }, [gameStarted, roomCode, showResults]);
-  
 
   async function createRoom() {
     const newRoomCode = uuidv4().slice(0, 5).toUpperCase();
@@ -149,58 +144,41 @@ export default function AnimeImposterGame() {
 
   async function startGame() {
     if (!players.length) return;
-    const randomCharacter = animeCharacters[Math.floor(Math.random() * animeCharacters.length)];
     const imposterIndex = Math.floor(Math.random() * players.length);
-    const assignedRoles = players.map((player, index) => ({
-      ...player,
-      role: index === imposterIndex ? "Imposter" : randomCharacter
-    }));
 
-    assignedRoles.forEach((player) => {
-      if (player && player.id && player.role) {
-        update(ref(db, `rooms/${roomCode}/players/${player.id}`), { role: player.role });
-      }
-    });
+    for (let i = 0; i < players.length; i++) {
+      const player = players[i];
+      await update(ref(db, `rooms/${roomCode}/players/${player.id}`), {
+        role: i === imposterIndex ? "Imposter" : animeCharacters[Math.floor(Math.random() * animeCharacters.length)]
+      });
+    }
 
     await update(ref(db, `rooms/${roomCode}`), { gameStarted: true, votes: {} });
-
-    setShowResults(false);
-    setVotedPlayer("");
-    setVotes({});
-    setVotesCount(0);
   }
 
   async function startNewGame() {
     if (!players.length) return;
-  
-    // Reset Votes und gameStarted auf false
+
     await update(ref(db, `rooms/${roomCode}`), { votes: {}, gameStarted: false });
-  
+
     const playersSnapshot = await get(ref(db, `rooms/${roomCode}/players`));
     const playersData = playersSnapshot.val();
     const playerList = playersData ? Object.values(playersData) : [];
-  
-    if (!playerList.length) return;
-  
+
     const imposterIndex = Math.floor(Math.random() * playerList.length);
-  
+
     for (let i = 0; i < playerList.length; i++) {
       const player = playerList[i];
       await update(ref(db, `rooms/${roomCode}/players/${player.id}`), {
         role: i === imposterIndex ? "Imposter" : animeCharacters[Math.floor(Math.random() * animeCharacters.length)]
       });
     }
-  
-    // Neues Spiel offiziell starten
+
     await update(ref(db, `rooms/${roomCode}`), { gameStarted: true });
-  
-    // Lokal zurücksetzen
     setShowResults(false);
     setVotedPlayer("");
-    setVotes({});
+    setVotesCount(0);
   }
-  
-  
 
   async function vote(name) {
     if (roomCode && !votedPlayer) {
@@ -209,18 +187,15 @@ export default function AnimeImposterGame() {
       setVotedPlayer(name);
     }
   }
-  
-  
 
   return (
     <div className="flex flex-col items-center p-10 min-h-screen bg-gradient-to-br from-blue-500 to-blue-800 text-white text-4xl">
       {showResults ? (
-        // Wenn Ergebnisse angezeigt werden:
         <div className="mt-16 text-center">
           <h2 className="text-6xl mb-10">Ergebnisse</h2>
           <p className="text-5xl mb-6">Am meisten Votes: {winner}</p>
           <p className="text-5xl mb-6">Der Imposter war: {imposterName}</p>
-  
+
           {players.find(p => p.name === playerName && p.id === hostId) && (
             <button onClick={startNewGame} className="mt-10 bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-10 rounded text-4xl">
               Neues Spiel starten
@@ -238,7 +213,7 @@ export default function AnimeImposterGame() {
               {errorMessage && <div className="text-red-400 text-3xl mt-4">{errorMessage}</div>}
             </>
           )}
-  
+
           {roomCode && !gameStarted && (
             <>
               <h2 className="text-6xl mb-6">Raumcode: {roomCode}</h2>
@@ -261,14 +236,14 @@ export default function AnimeImposterGame() {
               )}
             </>
           )}
-  
+
           {gameStarted && (
             <>
               <h1 className="text-8xl font-extrabold mb-10">Deine Rolle:</h1>
               <motion.div className="bg-blue-700 p-16 rounded-lg text-6xl font-bold" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 {myRole || "Wird geladen..."}
               </motion.div>
-  
+
               <div className="mt-16">
                 <h3 className="text-5xl mb-6">Wähle den Imposter:</h3>
                 {players.map((player) => (
@@ -282,12 +257,11 @@ export default function AnimeImposterGame() {
                   </button>
                 ))}
               </div>
-  
+
               {votedPlayer && (
                 <div className="mt-10 text-center">
                   <h4 className="text-4xl mb-4">Du hast abgestimmt für: {votedPlayer}</h4>
                   <p className="text-3xl mb-6">Warte, bis alle Spieler abgestimmt haben...</p>
-  
                   <div className="w-full bg-white rounded-full h-8 mt-8">
                     <div
                       className="bg-green-600 h-8 rounded-full"
@@ -297,10 +271,7 @@ export default function AnimeImposterGame() {
                       }}
                     ></div>
                   </div>
-  
-                  <p className="text-3xl mt-4">
-                    {votesCount}/{players.length} Stimmen abgegeben
-                  </p>
+                  <p className="text-3xl mt-4">{votesCount}/{players.length} Stimmen abgegeben</p>
                 </div>
               )}
             </>
@@ -309,5 +280,4 @@ export default function AnimeImposterGame() {
       )}
     </div>
   );
-  
 }
