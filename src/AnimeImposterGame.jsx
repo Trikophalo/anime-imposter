@@ -37,74 +37,39 @@ export default function AnimeImposterGame() {
   useEffect(() => {
     if (roomCode) {
       const roomRef = ref(db, `rooms/${roomCode}`);
-      const playersRef = ref(db, `rooms/${roomCode}/players`);
   
       const unsubscribeRoom = onValue(roomRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
           setHostId(data.hostId);
-          setGameStarted(data.gameStarted); // <-- Hier reagieren ALLE automatisch
-        }
-      });
-  
-      const unsubscribePlayers = onValue(playersRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          setPlayers(Object.values(data));
-          const me = Object.values(data).find(p => p.name === playerName);
-          if (me && me.role) {
-            setMyRole(me.role);
-          }
+          setGameStarted(data.gameStarted); // <-- wichtig
         }
       });
   
       return () => {
         unsubscribeRoom();
-        unsubscribePlayers();
       };
     }
-  }, [roomCode, playerName]);
+  }, [roomCode]);
+  
   
 
   useEffect(() => {
-    if (gameStarted && roomCode) {
-      const votesRef = ref(db, `rooms/${roomCode}/votes`);
+    if (gameStarted && roomCode && playerName) {
       const playersRef = ref(db, `rooms/${roomCode}/players`);
-
-      const unsubscribeVotes = onValue(votesRef, async (snapshot) => {
-        const votesData = snapshot.val();
-        const playersSnapshot = await get(playersRef);
-        const playersData = playersSnapshot.val();
-        const playerCount = playersData ? Object.keys(playersData).length : 0;
-        const totalVotes = votesData ? Object.keys(votesData).length : 0;
-
-        setVotesCount(totalVotes);
-
-        if (totalVotes >= playerCount && !showResults) {
-          // Ergebnis berechnen
-          const voteCounts = {};
-          Object.values(votesData).forEach((votedName) => {
-            voteCounts[votedName] = (voteCounts[votedName] || 0) + 1;
-          });
-          const sortedVotes = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
-          if (sortedVotes.length > 0) {
-            setWinner(sortedVotes[0][0]);
+      get(playersRef).then((snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const playerList = Object.values(data);
+          const me = playerList.find(p => p.name === playerName);
+          if (me && me.role) {
+            setMyRole(me.role);
           }
-
-          const imposter = Object.values(playersData).find(p => p.role === "Imposter");
-          if (imposter) {
-            setImposterName(imposter.name);
-          }
-
-          // Spiel stoppen
-          await update(ref(db, `rooms/${roomCode}`), { gameStarted: false });
-          setShowResults(true);
         }
       });
-
-      return () => unsubscribeVotes();
     }
-  }, [gameStarted, roomCode, showResults]);
+  }, [gameStarted, roomCode, playerName]);
+  
 
   async function createRoom() {
     const newRoomCode = uuidv4().slice(0, 5).toUpperCase();
