@@ -124,6 +124,7 @@ export default function AnimeImposterGame() {
           }
         }
       });
+      setVotedPlayer("");
     }
   }, [gameStarted, roomCode, playerName]);
 
