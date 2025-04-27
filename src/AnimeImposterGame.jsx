@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { motion } from "framer-motion";
 import { db } from "./firebaseConfig";
-import { ref, set, push, onValue, update } from "firebase/database";
+import { ref, set, push, onValue, update, get } from "firebase/database";
 
 const animeCharacters = [
   "Naruto Uzumaki",
@@ -59,12 +59,14 @@ const animeCharacters = [
 
 export default function AnimeImposterGame() {
   const [roomCode, setRoomCode] = useState("");
+  const [joinRoomCode, setJoinRoomCode] = useState("");
   const [players, setPlayers] = useState([]);
   const [playerName, setPlayerName] = useState("");
   const [gameStarted, setGameStarted] = useState(false);
   const [myRole, setMyRole] = useState("");
   const [votedPlayer, setVotedPlayer] = useState("");
   const [votes, setVotes] = useState({});
+  const [errorMessage, setErrorMessage] = useState("");
 
   function createRoom() {
     const newRoomCode = uuidv4().slice(0, 5).toUpperCase();
@@ -80,6 +82,19 @@ export default function AnimeImposterGame() {
     if (playerName && roomCode) {
       const playerRef = push(ref(db, `rooms/${roomCode}/players`));
       set(playerRef, { name: playerName, id: playerRef.key });
+    }
+  }
+
+  async function joinExistingRoom() {
+    if (playerName && joinRoomCode) {
+      const roomRef = ref(db, `rooms/${joinRoomCode.toUpperCase()}`);
+      const snapshot = await get(roomRef);
+      if (snapshot.exists()) {
+        setRoomCode(joinRoomCode.toUpperCase());
+        setErrorMessage("");
+      } else {
+        setErrorMessage("Raum existiert nicht!");
+      }
     }
   }
 
@@ -135,15 +150,18 @@ export default function AnimeImposterGame() {
       {!roomCode && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
           <h1 className="text-8xl font-extrabold mb-10">Anime Imposter 🎭</h1>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl" onClick={createRoom}>Raum erstellen</button>
+          <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl mb-6" onClick={createRoom}>Neuen Raum erstellen</button>
+          <input placeholder="Raumcode eingeben" value={joinRoomCode} onChange={e => setJoinRoomCode(e.target.value)} className="my-4 text-black text-3xl p-6 w-full rounded" />
+          <input placeholder="Dein Name" value={playerName} onChange={e => setPlayerName(e.target.value)} className="my-4 text-black text-3xl p-6 w-full rounded" />
+          <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl w-full" onClick={joinExistingRoom}>Bestehendem Raum beitreten</button>
+          {errorMessage && <div className="text-red-400 text-3xl mt-4">{errorMessage}</div>}
         </motion.div>
       )}
 
       {roomCode && !gameStarted && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="w-full max-w-4xl">
           <h2 className="text-6xl mb-6">Raumcode: {roomCode}</h2>
-          <input placeholder="Dein Name" value={playerName} onChange={e => setPlayerName(e.target.value)} className="my-4 text-black text-3xl p-6 w-full rounded" />
-          <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl w-full" onClick={joinRoom}>Beitreten</button>
+          <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-10 rounded text-4xl w-full mb-4" onClick={joinRoom}>Beitreten</button>
           <div className="mt-10">
             <h3 className="text-5xl mb-4">Spieler:</h3>
             {players.map((player, idx) => (
