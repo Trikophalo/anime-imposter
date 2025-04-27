@@ -31,14 +31,21 @@ export default function AnimeImposterGame() {
   const [hasJoined, setHasJoined] = useState(false);
   const [hostId, setHostId] = useState(null);
 
-  function createRoom() { ... }
-  async function joinExistingRoom() { ... }
-  async function joinRoom() { ... }
-
-  useEffect(() => { ... }, [roomCode]);
-  useEffect(() => { ... }, [gameStarted, roomCode, playerName]);
-  async function startGame() { ... }
-  function vote(name) { ... }
+  useEffect(() => {
+    if (gameStarted && roomCode && playerName) {
+      const playersRef = ref(db, `rooms/${roomCode}/players`);
+      get(playersRef).then((snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const playerList = Object.values(data);
+          const me = playerList.find(p => p.name === playerName);
+          if (me && me.role) {
+            setMyRole(me.role);
+          }
+        }
+      });
+    }
+  }, [gameStarted, roomCode, playerName]);
 
   return (
     <div className="flex flex-col items-center p-10 min-h-screen bg-gradient-to-br from-blue-500 to-blue-800 text-white text-4xl">
