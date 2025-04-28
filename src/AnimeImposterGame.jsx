@@ -124,6 +124,7 @@ const SimpleQuestionMarksBackground = () => {
     }))
   );
 
+
   useEffect(() => {
     let animationFrameId;
 
@@ -350,6 +351,38 @@ export default function AnimeImposterGame() {
   const [imposterGuessed, setImposterGuessed] = useState(false);
   const [imposterWon, setImposterWon] = useState(false);
   const [gameEndReason, setGameEndReason] = useState(""); // "imposterGuess", "voting"
+
+  function returnToHome() {
+    setHasJoined(false);
+    setRoomCode("");
+    setJoinRoomCode("");
+    setPlayers([]);
+    setPlayerName("");
+    setGameStarted(false);
+    setSelectedTheme(0);
+    setRoomTheme(0);
+    setShowResults(false);
+    setWinner("");
+    setVotedPlayer("");
+    setImposterGuess("");
+    setImposterGuessed(false);
+    setImposterWon(false);
+    setGameEndReason("");
+    setImposterName("");
+  }
+  
+  useEffect(() => {
+    if (!hasJoined) {
+      document.body.style.overflow = "hidden"; // Kein Scrollen auf der Startseite
+    } else {
+      document.body.style.overflow = "auto"; // Wieder normales Scrollen im Spiel
+    }
+  
+    // Clean up wenn Component unmountet wird
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [hasJoined]);
 
   useEffect(() => {
     if (roomCode) {
@@ -939,7 +972,10 @@ const imposterInputStyle = {
         </div>
       ) : !hasJoined ? (
         <>
-          <h1 style={titleStyle}>Imposter Game</h1>
+          <h1 style={{ ...titleStyle, cursor: "pointer" }} onClick={returnToHome}>
+           Imposter Game
+          </h1>
+
   
           {!roomCode ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
@@ -1009,20 +1045,26 @@ const imposterInputStyle = {
               <CopyToClipboard text={roomCode} />
   
               <input
-                type="text"
-                placeholder="Dein Name"
-                value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
-                style={{
-                  padding: "15px",
-                  fontSize: "32px",
-                  width: "30%",
-                  borderRadius: "12px",
-                  margin: "20px 0",
-                  border: "none",
-                  color: "black"
-                }}
-              />
+              type="text"
+              placeholder="Dein Name"
+              value={playerName}
+              onChange={(e) => {
+              if (e.target.value.length <= 12) {
+              setPlayerName(e.target.value);
+                }
+              }}
+              maxLength={10}
+              style={{
+              padding: "15px",
+              fontSize: "32px",
+              width: "30%",
+              borderRadius: "12px",
+              margin: "20px 0",
+               border: "none",
+              color: "black"
+              }}
+            />
+
   
               <button
                 onClick={joinRoom}
