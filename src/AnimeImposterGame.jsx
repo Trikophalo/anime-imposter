@@ -1,8 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { motion } from "framer-motion";
 import { db } from "./firebaseConfig";
 import { ref, set, push, onValue, update, get } from "firebase/database";
+import BACKGROUND_MUSIC_URL from "./Quizshow.mp3";
+import ChatBox from "./ChatBox"; // oder wo du sie speicherst
+
 
 // Anime-Charaktere (bereits vorhanden)
 const animeCharacters = [
@@ -71,6 +74,227 @@ const themes = [
   { name: "Geographie", items: geographyItems },
   { name: "Marken", items: brandItems }
 ];
+
+
+
+// Simple moving Question Marks (smooth, sehr transparent, alle bewegen sich)
+const SimpleQuestionMarksBackground = () => {
+  const numberOfMarks = 12; // 12 große Fragezeichen
+  const [questionMarks, setQuestionMarks] = useState(
+    Array.from({ length: numberOfMarks }).map(() => ({
+      id: Math.random().toString(36).substr(2, 9),
+      top: Math.random() * 100,
+      left: Math.random() * 100,
+      size: Math.random() * 210 + 190, // wie groß
+      opacity: Math.random() * 0.03 + 0.01, // Jetzt sehr durchsichtig
+      deltaTop: (Math.random() - 0.5) * 0.05,  // sehr langsame Bewegung
+      deltaLeft: (Math.random() - 0.5) * 0.05
+    }))
+  );
+
+  useEffect(() => {
+    let animationFrameId;
+
+    const moveMarks = () => {
+      setQuestionMarks(prev =>
+        prev.map(mark => {
+          let newTop = mark.top + mark.deltaTop;
+          let newLeft = mark.left + mark.deltaLeft;
+
+          // Umkehren, wenn am Rand
+          if (newTop <= 0 || newTop >= 100) mark.deltaTop *= -1;
+          if (newLeft <= 0 || newLeft >= 100) mark.deltaLeft *= -1;
+
+          return {
+            ...mark,
+            top: Math.min(Math.max(newTop, 0), 100),
+            left: Math.min(Math.max(newLeft, 0), 100),
+            deltaTop: mark.deltaTop,
+            deltaLeft: mark.deltaLeft
+          };
+        })
+      );
+
+      animationFrameId = requestAnimationFrame(moveMarks);
+    };
+
+    animationFrameId = requestAnimationFrame(moveMarks);
+
+    return () => cancelAnimationFrame(animationFrameId);
+  }, []);
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      overflow: 'hidden',
+      zIndex: -1,
+      backgroundColor: '#1a1a1a'
+    }}>
+      {questionMarks.map(mark => (
+        <div
+          key={mark.id}
+          style={{
+            position: 'absolute',
+            top: `${mark.top}%`,
+            left: `${mark.left}%`,
+            fontSize: `${mark.size}px`,
+            fontWeight: '900',
+            color: `rgba(255, 255, 255, ${mark.opacity})`,
+            userSelect: 'none',
+            pointerEvents: 'none',
+            transform: 'translate(-50%, -50%)',
+            transition: 'top 0.1s linear, left 0.1s linear'
+          }}
+        >
+          ?
+        </div>
+      ))}
+    </div>
+  );
+};
+
+
+
+
+
+
+
+// MusicPlayer Komponente
+const MusicPlayer = () => {
+  const [volume, setVolume] = useState(0.3);
+  const [isMuted, setIsMuted] = useState(false);
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = isMuted ? 0 : volume;
+    }
+  }, [volume, isMuted]);
+
+  useEffect(() => {
+    const handleUserGesture = () => {
+      if (audioRef.current) {
+        audioRef.current.play().catch((err) => {
+          console.log('Audio konnte nicht automatisch gestartet werden:', err);
+        });
+      }
+      document.removeEventListener('click', handleUserGesture);
+    };
+
+    document.addEventListener('click', handleUserGesture);
+
+    return () => {
+      document.removeEventListener('click', handleUserGesture);
+    };
+  }, []);
+
+  return (
+    <div style={{
+      position: "fixed",
+      top: "20px",
+      right: "20px",
+      backgroundColor: "rgba(0,0,0,0.5)",
+      padding: "10px",
+      borderRadius: "12px",
+      display: "flex",
+      alignItems: "center",
+      zIndex: 100
+    }}>
+      <audio ref={audioRef} loop>
+        <source src={BACKGROUND_MUSIC_URL} />
+        Dein Browser unterstützt kein Audio-Element.
+      </audio>
+
+      <button 
+        onClick={() => setIsMuted(!isMuted)}
+        style={{
+          backgroundColor: "transparent",
+          border: "none",
+          cursor: "pointer",
+          color: "white",
+          fontSize: "24px",
+          marginRight: "10px"
+        }}
+      >
+        {isMuted ? "🔇" : "🔊"}
+      </button>
+
+      <input 
+        type="range" 
+        min="0" 
+        max="1" 
+        step="0.01" 
+        value={volume}
+        onChange={(e) => setVolume(parseFloat(e.target.value))}
+        style={{
+          width: "100px",
+          accentColor: "#ff3366"
+        }}
+      />
+    </div>
+  );
+};
+
+
+// CopyToClipboard Komponente
+const CopyToClipboard = ({ text }) => {
+  const [copied, setCopied] = useState(false);
+  
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  
+  return (
+    <div 
+      onClick={handleCopy}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        cursor: "pointer",
+        position: "relative"
+      }}
+    >
+      {text}
+      <motion.span
+        style={{
+          marginLeft: "10px",
+          fontSize: "24px"
+        }}
+        whileHover={{ scale: 1.2 }}
+      >
+        📋
+      </motion.span>
+      
+      {copied && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          style={{
+            position: "absolute",
+            top: "100%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            backgroundColor: "#4caf50",
+            color: "white",
+            padding: "5px 10px",
+            borderRadius: "5px",
+            fontSize: "16px",
+            whiteSpace: "nowrap"
+          }}
+        >
+          Kopiert!
+        </motion.div>
+      )}
+    </div>
+  );
+};
 
 export default function AnimeImposterGame() {
   const [roomCode, setRoomCode] = useState("");
@@ -310,9 +534,11 @@ export default function AnimeImposterGame() {
     alignItems: "center",
     padding: "40px",
     minHeight: "100vh",
-    backgroundColor: "#1a1a6a",
+    // backgroundColor: "#1a1a6a", // Entfernen Sie diese Zeile
     color: "white",
-    fontSize: "36px"
+    fontSize: "36px",
+    position: "relative",
+    zIndex: 1
   };
 
   const titleStyle = {
@@ -371,11 +597,17 @@ export default function AnimeImposterGame() {
 
   return (
     <div style={mainContainerStyle}>
+      <SimpleQuestionMarksBackground />
+      <MusicPlayer />
+      <ChatBox roomCode={roomCode} playerName={playerName} />
+
       {showResults ? (
         <div style={{marginTop: "80px", textAlign: "center"}}>
           <h2 style={{fontSize: "72px", marginBottom: "40px", fontWeight: "bold"}}>Ergebnisse</h2>
-          <p style={{fontSize: "60px", marginBottom: "30px"}}>Am meisten Votes: {winner}</p>
-          <p style={{fontSize: "60px", marginBottom: "30px"}}>Der Imposter war: {imposterName}</p>
+          <p style={{fontSize: "60px", marginBottom: "30px"}}>Am meisten Votes: <span style={{fontWeight: "bold"}}>{winner}</span></p>
+          <p style={{fontSize: "60px", marginBottom: "30px"}}>
+            Der Imposter war: <span style={{fontWeight: "bold", color: "#ff3366"}}>{imposterName}</span>
+          </p>
 
           {countdown > 0 ? (
             <p style={{fontSize: "48px", marginTop: "30px"}}>Nächste Runde startet in {countdown} Sekunden...</p>
@@ -420,7 +652,9 @@ export default function AnimeImposterGame() {
 
           {roomCode && !gameStarted && (
             <>
-              <h2 style={{fontSize: "72px", marginBottom: "30px", fontWeight: "bold"}}>Raumcode: {roomCode}</h2>
+              <h2 style={{fontSize: "72px", marginBottom: "30px", fontWeight: "bold"}}>
+                Raumcode: <CopyToClipboard text={roomCode} />
+              </h2>
               {!hasJoined && players.length < 8 && (
                 <>
                   <input placeholder="Dein Name" value={playerName} onChange={e => setPlayerName(e.target.value)} style={inputStyle} />
@@ -495,7 +729,7 @@ export default function AnimeImposterGame() {
               <h1 style={{fontSize: "80px", fontWeight: "900", marginBottom: "40px", color: "#ff3366"}}>Deine Rolle:</h1>
               <motion.div 
                 style={{
-                  backgroundColor: "#1a1a8a", 
+                  backgroundColor: myRole === "Imposter" ? "#ff3366" : "#1a1a8a", 
                   padding: "60px", 
                   borderRadius: "20px", 
                   fontSize: "64px", 
