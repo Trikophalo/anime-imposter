@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { db } from "./firebaseConfig";
 import { ref, set, push, onValue, update, get } from "firebase/database";
 
+// Anime-Charaktere (bereits vorhanden)
 const animeCharacters = [
   "Naruto Uzumaki", "Sasuke Uchiha", "Sakura Haruno", "Kakashi Hatake",
   "Monkey D. Luffy", "Roronoa Zoro", "Nami", "Sanji", "Tony Tony Chopper",
@@ -16,6 +17,59 @@ const animeCharacters = [
   "Natsu Dragneel", "Lucy Heartfilia", "Gray Fullbuster", "Erza Scarlet",
   "Saber", "Kirito", "Asuna", "Zero Two", "Ken Kaneki", "Touka Kirishima",
   "Shoto Todoroki", "Izuku Midoriya"
+];
+
+// Allgemeinwissen (neu)
+const generalKnowledgeItems = [
+  "Albert Einstein", "Isaac Newton", "Galileo Galilei", "Marie Curie",
+  "Charles Darwin", "Nikola Tesla", "Leonardo da Vinci", "Michelangelo",
+  "William Shakespeare", "Mozart", "Beethoven", "Bach",
+  "Napoleon Bonaparte", "Julius Cäsar", "Alexander der Große",
+  "Mona Lisa", "Die Nachtwache", "Der Schrei", "Sternennacht",
+  "Harry Potter", "Der Herr der Ringe", "Game of Thrones", "Star Wars",
+  "Die Relativitätstheorie", "Thermodynamik", "Schwerkraft", "Elektromagnetismus",
+  "Die Renaissance", "Die Aufklärung", "Die industrielle Revolution",
+  "Das Periodic System", "DNA", "Photosynthese", "Zelltheorie",
+  "Die Magna Carta", "Die Unabhängigkeitserklärung", "Die französische Revolution",
+  "Das Internet", "Computer", "Smartphone", "Künstliche Intelligenz",
+  "Impfung", "Antibiotika", "Röntgenstrahlung", "Mikroskop", "Teleskop",
+  "Die Demokratie", "Der Kommunismus", "Der Kapitalismus", "Monarchie"
+];
+
+// Geographie (neu)
+const geographyItems = [
+  "Deutschland", "Frankreich", "Italien", "Spanien", "Vereinigtes Königreich",
+  "USA", "Kanada", "Mexiko", "Brasilien", "Argentinien",
+  "China", "Japan", "Indien", "Australien", "Russland",
+  "Ägypten", "Südafrika", "Nigeria", "Kenia", "Marokko",
+  "Amazon", "Nil", "Mississippi", "Yangtze", "Donau",
+  "Himalaya", "Alpen", "Anden", "Rocky Mountains", "Atlas-Gebirge",
+  "Pazifischer Ozean", "Atlantischer Ozean", "Indischer Ozean", "Arktischer Ozean",
+  "Sahara", "Gobi", "Antarktis", "Amazonas-Regenwald", "Sibirische Taiga",
+  "Tokio", "New York", "London", "Paris", "Peking",
+  "Venedig", "Amsterdam", "Istanbul", "Rio de Janeiro", "Sydney"
+];
+
+// Marken (neu)
+const brandItems = [
+  "Apple", "Microsoft", "Google", "Amazon", "Facebook",
+  "Coca-Cola", "Pepsi", "Fanta", "Sprite", "Dr Pepper",
+  "Nike", "Adidas", "Puma", "Reebok", "Under Armour",
+  "Mercedes-Benz", "BMW", "Audi", "Volkswagen", "Porsche",
+  "McDonald's", "Burger King", "KFC", "Subway", "Pizza Hut",
+  "Samsung", "Sony", "LG", "Panasonic", "Philips",
+  "LEGO", "Mattel", "Hasbro", "Nintendo", "PlayStation",
+  "Chanel", "Gucci", "Louis Vuitton", "Prada", "Versace",
+  "Disney", "Netflix", "HBO", "Spotify", "YouTube",
+  "IKEA", "H&M", "Zara", "Uniqlo", "Nike"
+];
+
+// Themenliste zur besseren Verwaltung
+const themes = [
+  { name: "Anime Charaktere", items: animeCharacters },
+  { name: "Allgemeinwissen", items: generalKnowledgeItems },
+  { name: "Geographie", items: geographyItems },
+  { name: "Marken", items: brandItems }
 ];
 
 export default function AnimeImposterGame() {
@@ -34,6 +88,8 @@ export default function AnimeImposterGame() {
   const [winner, setWinner] = useState("");
   const [imposterName, setImposterName] = useState("");
   const [countdown, setCountdown] = useState(5);
+  const [selectedTheme, setSelectedTheme] = useState(0); // Standard: Anime Charaktere
+  const [roomTheme, setRoomTheme] = useState(0); // Der im Raum ausgewählte Theme-Index
 
   useEffect(() => {
     if (roomCode) {
@@ -45,6 +101,9 @@ export default function AnimeImposterGame() {
         if (data) {
           setHostId(data.hostId);
           setGameStarted(data.gameStarted);
+          if (data.themeIndex !== undefined) {
+            setRoomTheme(data.themeIndex);
+          }
           if (data.gameStarted) {
             setShowResults(false);
           }
@@ -149,6 +208,7 @@ export default function AnimeImposterGame() {
       gameStarted: false,
       votes: {},
       hostId: null,
+      themeIndex: 0 // Standard-Theme: Anime Charaktere
     });
   }
 
@@ -158,6 +218,10 @@ export default function AnimeImposterGame() {
       const snapshot = await get(roomRef);
       if (snapshot.exists()) {
         setRoomCode(joinRoomCode.toUpperCase());
+        const roomData = snapshot.val();
+        if (roomData.themeIndex !== undefined) {
+          setRoomTheme(roomData.themeIndex);
+        }
         setErrorMessage("");
       } else {
         setErrorMessage("Raum existiert nicht!");
@@ -178,11 +242,20 @@ export default function AnimeImposterGame() {
     }
   }
 
+  async function changeTheme(themeIndex) {
+    if (roomCode && hostId && players.find(p => p.name === playerName && p.id === hostId)) {
+      await update(ref(db, `rooms/${roomCode}`), { themeIndex: themeIndex });
+      setSelectedTheme(themeIndex);
+    }
+  }
+
   async function startGame() {
     if (!players.length) return;
 
     const imposterIndex = Math.floor(Math.random() * players.length);
-    const commonRole = animeCharacters[Math.floor(Math.random() * animeCharacters.length)];
+    // Verwende das ausgewählte Thema
+    const themeItems = themes[roomTheme].items;
+    const commonRole = themeItems[Math.floor(Math.random() * themeItems.length)];
 
     for (let i = 0; i < players.length; i++) {
       const player = players[i];
@@ -204,7 +277,9 @@ export default function AnimeImposterGame() {
     const playerList = playersData ? Object.values(playersData) : [];
 
     const imposterIndex = Math.floor(Math.random() * playerList.length);
-    const commonRole = animeCharacters[Math.floor(Math.random() * animeCharacters.length)];
+    // Verwende das ausgewählte Thema
+    const themeItems = themes[roomTheme].items;
+    const commonRole = themeItems[Math.floor(Math.random() * themeItems.length)];
 
     for (let i = 0; i < playerList.length; i++) {
       const player = playerList[i];
@@ -228,50 +303,70 @@ export default function AnimeImposterGame() {
     }
   }
 
-  // Updated styles
+  // Styles
   const mainContainerStyle = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     padding: "40px",
     minHeight: "100vh",
-    backgroundColor: "#1a1a6a", // Lighter background color
+    backgroundColor: "#1a1a6a",
     color: "white",
     fontSize: "36px"
   };
 
   const titleStyle = {
-    fontSize: "92px",
+    fontSize: "80px",
     fontWeight: "900",
-    marginBottom: "40px",
-    color: "#ff3366", // Knalliges Pink
+    marginBottom: "20px",
+    color: "#ff3366",
     textShadow: "3px 3px 6px rgba(0,0,0,0.5)"
   };
 
-  // Updated button style - shorter height
   const buttonStyle = {
-    backgroundColor: "#39c2ff", // Sehr helles Blau
+    backgroundColor: "#39c2ff",
     color: "white",
     fontWeight: "bold",
-    padding: "15px 30px", // Reduced padding for shorter buttons
+    padding: "15px 30px",
     borderRadius: "12px",
-    fontSize: "32px", // Slightly smaller font
+    fontSize: "32px",
     margin: "10px",
     cursor: "pointer",
     boxShadow: "0 4px 8px rgba(0,0,0,0.3)",
     border: "none",
-    width: "100%",
-    transition: "background-color 0.3s ease" // Smooth transition for hover effect
+    width: "32%",
+    transition: "background-color 0.3s ease"
   };
 
   const inputStyle = {
-    padding: "15px", // Reduced padding for consistency
+    padding: "15px",
     fontSize: "32px",
-    width: "100%",
+    width: "30%",
     borderRadius: "12px",
     margin: "20px 0",
     border: "none",
     color: "black"
+  };
+
+  // Themes selector style
+  const themeButtonStyle = {
+    backgroundColor: "#39c2ff",
+    color: "white",
+    fontWeight: "bold",
+    padding: "15px 30px",
+    borderRadius: "12px",
+    fontSize: "28px",
+    margin: "10px",
+    cursor: "pointer",
+    boxShadow: "0 4px 8px rgba(0,0,0,0.3)",
+    border: "none",
+    transition: "background-color 0.3s ease"
+  };
+
+  const selectedThemeButtonStyle = {
+    ...themeButtonStyle,
+    backgroundColor: "#ff3366",
+    transform: "scale(1.05)"
   };
 
   return (
@@ -289,8 +384,8 @@ export default function AnimeImposterGame() {
               <button 
                 onClick={startNewGame} 
                 style={{...buttonStyle, marginTop: "40px"}}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#2ba3db"} // Darker on hover
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#39c2ff"} // Back to original
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#2ba3db"}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#39c2ff"}
               >
                 Neues Spiel starten
               </button>
@@ -301,12 +396,12 @@ export default function AnimeImposterGame() {
         <>
           {!roomCode && (
             <>
-              <h1 style={titleStyle}>SUPER ANIME IMPOSTER GAME 2.0! 🎮</h1>
+              <h1 style={titleStyle}>Guess the Imposter 👩‍🦯‍➡️</h1>
               <button 
-                style={buttonStyle} 
+                style={{...buttonStyle, margin: "100px", backgroundColor: "#00e964", fontSize: "50px", width: "50%"}}
                 onClick={createRoom}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#2ba3db"} // Darker on hover
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#39c2ff"} // Back to original
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#00ad4a"}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#00e964"}
               >
                 Neuen Raum erstellen
               </button>
@@ -314,10 +409,10 @@ export default function AnimeImposterGame() {
               <button 
                 style={buttonStyle} 
                 onClick={joinExistingRoom}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#2ba3db"} // Darker on hover
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#39c2ff"} // Back to original
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#2ba3db"}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#39c2ff"}
               >
-                Bestehendem Raum beitreten
+                Raum beitreten
               </button>
               {errorMessage && <div style={{color: "#ff4444", fontSize: "32px", marginTop: "20px", fontWeight: "bold"}}>{errorMessage}</div>}
             </>
@@ -332,13 +427,50 @@ export default function AnimeImposterGame() {
                   <button 
                     style={buttonStyle} 
                     onClick={joinRoom}
-                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#2ba3db"} // Darker on hover
-                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#39c2ff"} // Back to original
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#2ba3db"}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#39c2ff"}
                   >
                     Beitreten
                   </button>
                 </>
               )}
+              
+              {/* Themenauswahl für den Host */}
+              {hasJoined && players.find(p => p.name === playerName && p.id === hostId) && !gameStarted && (
+                <div style={{marginTop: "20px", marginBottom: "40px", textAlign: "center", width: "100%"}}>
+                  <h3 style={{fontSize: "48px", marginBottom: "20px", fontWeight: "bold"}}>Wähle ein Thema:</h3>
+                  <div style={{display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "15px"}}>
+                    {themes.map((theme, index) => (
+                      <button
+                        key={index}
+                        onClick={() => changeTheme(index)}
+                        style={roomTheme === index ? selectedThemeButtonStyle : themeButtonStyle}
+                        onMouseOver={(e) => {
+                          if (roomTheme !== index) {
+                            e.currentTarget.style.backgroundColor = "#2ba3db";
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (roomTheme !== index) {
+                            e.currentTarget.style.backgroundColor = "#39c2ff";
+                          }
+                        }}
+                      >
+                        {theme.name}
+                      </button>
+                    ))}
+                  </div>
+                  <p style={{fontSize: "32px", marginTop: "15px"}}>Aktuelles Thema: <span style={{fontWeight: "bold", color: "#ff3366"}}>{themes[roomTheme].name}</span></p>
+                </div>
+              )}
+              
+              {/* Wenn nicht Host, zeige ausgewähltes Thema an */}
+              {hasJoined && !players.find(p => p.name === playerName && p.id === hostId) && !gameStarted && (
+                <div style={{marginTop: "20px", marginBottom: "20px", textAlign: "center"}}>
+                  <p style={{fontSize: "36px"}}>Ausgewähltes Thema: <span style={{fontWeight: "bold", color: "#ff3366"}}>{themes[roomTheme].name}</span></p>
+                </div>
+              )}
+
               <div style={{fontSize: "60px", marginBottom: "20px", fontWeight: "bold"}}>Spieler ({players.length}/8):</div>
               {players.map((player) => (
                 <div key={player.id} style={{fontSize: "36px", marginBottom: "10px"}}>
@@ -349,8 +481,8 @@ export default function AnimeImposterGame() {
                 <button 
                   onClick={startGame} 
                   style={{...buttonStyle, marginTop: "40px"}}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#2ba3db"} // Darker on hover
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#39c2ff"} // Back to original
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#2ba3db"}
+                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#39c2ff"}
                 >
                   Spiel starten
                 </button>
@@ -393,12 +525,12 @@ export default function AnimeImposterGame() {
                       }}
                       onMouseOver={(e) => {
                         if (votedPlayer !== player.name) {
-                          e.currentTarget.style.backgroundColor = "#2ba3db"; // Darker on hover
+                          e.currentTarget.style.backgroundColor = "#2ba3db";
                         }
                       }}
                       onMouseOut={(e) => {
                         if (votedPlayer !== player.name) {
-                          e.currentTarget.style.backgroundColor = "#39c2ff"; // Back to original
+                          e.currentTarget.style.backgroundColor = "#39c2ff";
                         }
                       }}
                     >
