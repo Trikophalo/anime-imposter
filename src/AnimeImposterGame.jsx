@@ -383,7 +383,7 @@ export default function AnimeImposterGame() {
             players.find(p => p.name === playerName && p.id === hostId) && (
               <button 
                 onClick={startNewGame} 
-                style={{...buttonStyle, marginTop: "40px"}}
+                style={{...buttonStyle, marginTop: "40px", width: "100%"}}
                 onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#2ba3db"}
                 onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#39c2ff"}
               >
