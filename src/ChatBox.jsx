@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { db } from "./firebaseConfig"; // Deine Firebase-Konfiguration
 import { ref, push, onValue } from "firebase/database"; // Funktionen von Firebase Realtime Database
+import { off } from "firebase/database"; // <- auch importieren!
 
 const ChatBox = ({ roomCode, playerName }) => {
   const [messages, setMessages] = useState([]);
@@ -10,17 +11,23 @@ const ChatBox = ({ roomCode, playerName }) => {
   const messagesEndRef = useRef(null);
   const audioRef = useRef(null);
 
+
   useEffect(() => {
     if (roomCode) {
       const chatRef = ref(db, `rooms/${roomCode}/chat`);
-      onValue(chatRef, (snapshot) => {
+      const unsubscribe = onValue(chatRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
           setMessages(Object.values(data));
         }
       });
+  
+      return () => {
+        off(chatRef); // Unsubscribe richtig aufrufen
+      };
     }
   }, [roomCode]);
+  
 
   useEffect(() => {
     if (messagesEndRef.current) {
