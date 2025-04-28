@@ -334,7 +334,7 @@ export default function AnimeImposterGame() {
     cursor: "pointer",
     boxShadow: "0 4px 8px rgba(0,0,0,0.3)",
     border: "none",
-    width: "32%",
+    width: "30%",
     transition: "background-color 0.3s ease"
   };
 
@@ -519,7 +519,7 @@ export default function AnimeImposterGame() {
                       onClick={() => vote(player.name)}
                       disabled={votedPlayer !== ""}
                       style={{
-                        ...buttonStyle,
+                        ...buttonStyle, width: "100%",
                         opacity: votedPlayer ? 0.6 : 1,
                         backgroundColor: votedPlayer === player.name ? "#ff3366" : "#39c2ff"
                       }}
