@@ -846,8 +846,8 @@ const imposterInputStyle = {
                   fontSize: "36px",
                   borderRadius: "15px",
                   border: "none",
-                  marginTop: "50px",
-                  marginBottom: "150px",
+                  marginTop: "90px",
+                  marginBottom: "180px",
                   cursor: "pointer",
                   boxShadow: "0 6px 12px rgba(0,0,0,0.3)"
                 }}
