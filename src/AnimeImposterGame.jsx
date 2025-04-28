@@ -191,7 +191,7 @@ const SimpleQuestionMarksBackground = () => {
 
 // MusicPlayer Komponente
 const MusicPlayer = () => {
-  const [volume, setVolume] = useState(0.3);
+  const [volume, setVolume] = useState(0.1);
   const [isMuted, setIsMuted] = useState(false);
   const audioRef = useRef(null);
 
