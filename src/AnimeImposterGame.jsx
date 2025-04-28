@@ -8,60 +8,97 @@ import ChatBox from "./ChatBox"; // oder wo du sie speicherst
 
 // Anime-Charaktere (bereits vorhanden)
 const animeCharacters = [
-  "Naruto Uzumaki", "Sasuke Uchiha", "Sakura", "Kakashi Hatake",
-  "Monkey D. Luffy", "Roronoa Zoro", "Nami", "Sanji", "Goku", "Vegeta", "Piccolo", "Gohan", "Frieza",
-  "Light Yagami", "L Lawliet", "Ryuk", "Edward Elric", "Ichigo Kurosaki",
-  "Uryu Ishida", "Orihime Inoue", "Saitama", "Genos", "Tatsumaki",
-  "Mumen Rider", "Levi Ackerman", "Eren Yeager", "Mikasa Ackerman",
-  "Armin Arlert", "Erwin Smith", "Rem", "Emilia", "Subaru Natsuki",
-  "Natsu Dragneel", "Kirito", "Asuna", 
-  "Zero Two", "Ken Kaneki", "Touka Kirishima",
-  "Shoto Todoroki", "Izuku Midoriya"
+"Naruto Uzumaki", "Sasuke Uchiha", "Sakura", "Kakashi Hatake",
+"Luffy", "Roronoa Zoro", "Nami", "Sanji",
+"Goku", "Vegeta", "Piccolo", "Gohan", "Frieza",
+"Light Yagami", "Ryuk", "Edward Elric", "L",
+"Ichigo Kurosaki", "Uryu Ishida", "Orihime Inoue",
+"Saitama", "Genos", "Tatsumaki", "Mumen Rider",
+"Levi Ackerman", "Eren Yeager", "Mikasa Ackerman", "Armin Arlert", "Erwin Smith",
+"Rem", "Emilia", "Subaru Natsuki", "Natsu Dragneel",
+"Kirito", "Asuna", "Zero Two", "Ken Kaneki", "Itachi Uchiha", "Gaara", "Hinata Hyuga",
+"All Might", "Bakugo Katsuki", "Shanks", "Usopp", "Trafalgar Law", "Jiraiya",
+"Nezuko", "Tanjiro", "Zenitsu Agatsuma", "Inosuke Hashibira",
+"Giyu Tomioka", "Kanao Tsuyuri", "Saber", "Gilgamesh", "Askeladd",
+"Killua Zoldyck", "Gon Freecss", "Hisoka", "Denji",
+"Alphonse Elric", "Greed", "Kurapika", "Thorfinn", "Gintoki",
+"Gojo Satoru", "Yuji Itadori", "Megumi Fushiguro"
 ];
 
 // Allgemeinwissen (neu)
 const generalKnowledgeItems = [
-  "Albert Einstein", "Isaac Newton", "Galileo Galilei", "Marie Curie",
-  "Charles Darwin", "Nikola Tesla", "Leonardo da Vinci", "Michelangelo",
-  "William Shakespeare", "Mozart", "Beethoven", "Bach",
-  "Napoleon Bonaparte", "Julius Cäsar", "Alexander der Große",
-  "Mona Lisa", "Die Nachtwache", "Der Schrei", "Sternennacht",
-  "Harry Potter", "Der Herr der Ringe", "Game of Thrones", "Star Wars",
-  "Die Relativitätstheorie", "Thermodynamik", "Schwerkraft", "Elektromagnetismus",
-  "Die Renaissance", "Die Aufklärung", "Die industrielle Revolution",
-  "Das Periodic System", "DNA", "Photosynthese", "Zelltheorie",
-  "Die Magna Carta", "Die Unabhängigkeitserklärung", "Die französische Revolution",
-  "Das Internet", "Computer", "Smartphone", "Künstliche Intelligenz",
-  "Impfung", "Antibiotika", "Röntgenstrahlung", "Mikroskop", "Teleskop",
-  "Die Demokratie", "Der Kommunismus", "Der Kapitalismus", "Monarchie"
+"Einstein", "Newton", "Galileo", "Tesla", "Shakespeare", "Mozart", "Beethoven", "Napoleon", "Caesar", "Cleopatra", 
+"Aristoteles", "Sokrates", "Goethe", "Mittelalter", "Antike", "Neuzeit", "Revolution", "Demokratie", "Kommunismus",
+"Kapitalismus", "Monarchie", "Imperium", "Kolonie", "Internet", "Computer", "Druckerpresse", "Fernseher",
+"Zelle", "Atom", "Molekul", "Gravitation", "Evolution", "Photosynthese", "Elektrizitat", "Magnetismus",
+"Relativitat", "Quantenphysik", "Biologie", "Chemie", "Physik", "Mathematik", "Astronomie", "Medizin",
+"Kunst", "Literatur", "Philosophie", "Architektur", "Musik", "Oper", "Ballett", "Theater", 
+"Zuckerberg", "Obama", "Merkel", "Trump", "Biden", "Drake", "Adele", "Rihanna", "Beyonce",
+"Blockchain", "Bitcoin", "Impfung", "Genetik", "Mars", "Elektroauto", "Solar", "Windkraft", 
+"Fusion", "Recycling", "Nachhaltig", "Handy", "Streaming", "Podcast", "Drohne", "Satellit", "KI", "Algorithmus", 
+"Datenschutz", "Quanten", "Cyber", "Biotech", "Medien", "Digital", "Streetart", "Youtube", "Tiktok",
+"Influencer", "Follower", "Hashtag", "Gaming", "Esport", "Streaming", "Livestream", 
+"App", "Download", "Upload", "Passwort", "Emoji", "Meme", "Chatbot",
+"Virtual", "Avatar", "Content", "Creator", "Trend", "Like", "Share",
+"Selfie", "Story", "Post", "Blog", "Vlog", "Mensch", "Kind", "Frau", 
+"Mann", "Baby", "Familie", "Freund", "Tier","Hund", "Katze", "Vogel", "Fisch", "Auto", "Buch", "Stuhl", "Tisch",
+"Tür", "Fenster", "Haus", "Bett", "Lampe", "Baum", "Blume", "Wiese",
+"Apfel", "Brot", "Milch", "Wasser", "Saft", "Tee", "Kaffee", "Schokolade",
+"Ball", "Puppe", "Zug", "Bus", "Flugzeug", "Fahrrad", "Straße", "Weg",
+"Hand", "Fuß", "Kopf", "Auge", "Ohr", "Nase", "Mund", "Haar",
+"Sonne", "Mond", "Stern", "Wolke", "Regen", "Schnee", "Wind", "Feuer",
+"Tag", "Nacht", "Morgen", "Abend", "Sommer", "Winter", "Herbst", "Frühling",
+"Freude", "Lachen", "Weinen", "Liebe", "Hoffnung", "Angst", "Mut", "Glück",
+"Buchstabe", "Wort", "Bild", "Ton", "Lied", "Spiel", "Arbeit", "Pause", "Stadion",
+"Zeit", "Stunde", "Minute", "Sekunde", "Jahr", "Tag", "Woche", "Monat", "Pyramide", "Vape"
 ];
 
 // Geographie (neu)
 const geographyItems = [
-  "Deutschland", "Frankreich", "Italien", "Spanien", "Vereinigtes Königreich",
-  "USA", "Kanada", "Mexiko", "Brasilien", "Argentinien",
-  "China", "Japan", "Indien", "Australien", "Russland",
-  "Ägypten", "Südafrika", "Nigeria", "Kenia", "Marokko",
-  "Amazon", "Nil", "Mississippi", "Yangtze", "Donau",
-  "Himalaya", "Alpen", "Anden", "Rocky Mountains", "Atlas-Gebirge",
-  "Pazifischer Ozean", "Atlantischer Ozean", "Indischer Ozean", "Arktischer Ozean",
-  "Sahara", "Gobi", "Antarktis", "Amazonas-Regenwald", "Sibirische Taiga",
-  "Tokio", "New York", "London", "Paris", "Peking",
-  "Venedig", "Amsterdam", "Istanbul", "Rio de Janeiro", "Sydney"
+"Deutschland", "Frankreich", "Italien", "Spanien", "England",
+"USA", "Kanada", "Mexiko", "Brasilien", "Argentinien",
+"China", "Japan", "Indien", "Australien", "Russland",
+"Ägypten", "Südafrika", "Nigeria", "Marokko",
+"Norwegen", "Schweden", "Finnland", "Dänemark", "Polen",
+"Österreich", "Schweiz", "Niederlande", "Belgien", "Portugal",
+"Griechenland", "Türkei", "Thailand", "Vietnam", "Indonesien",
+"Iran", "Irak", "Israel", "Chile", "Amazonas", "Berg", "Landschaft",
+"Peru", "Kolumbien", "Venezuela", "Neuseeland", "Philippinen",
+"Tokio", "NewYork", "London", "Paris", "Peking", "Ufer",
+"Berlin", "Hamburg", "München", "Rom", "Madrid", "Wasserfall",
+"Toronto", "Chicago", "Boston", "Miami", "LosAngeles", "Erdrutsch",
+"Shanghai", "Seoul", "Bangkok", "Mumbai", "Kapstadt", "Lawine",
+"Kairo", "Jakarta", "Athen", "Wüste", "Regenwald", "Wald", "Nordpol", "Südpol",
+"Wien", "Prag", "Budapest", "Oslo", "Stockholm",
+"Zürich", "Genf", "Brüssel", "Lissabon", "Helsinki",
+"Nil", "Amazonas", "Donau", "BigBen", "Ulm", "Korallenriff", 
+"Rhein", "Elbe", "Kongo", "TajMahal", "Eiffelturm", "Colosseum", "Tundra"
 ];
 
 // Marken (neu)
 const brandItems = [
-  "Apple", "Microsoft", "Google", "Amazon", "Facebook",
-  "Coca-Cola", "Pepsi", "Fanta", "Sprite", "Dr Pepper",
-  "Nike", "Adidas", "Puma", "Reebok", "Under Armour",
-  "Mercedes-Benz", "BMW", "Audi", "Volkswagen", "Porsche",
-  "McDonald's", "Burger King", "KFC", "Subway", "Pizza Hut",
-  "Samsung", "Sony", "LG", "Panasonic", "Philips",
-  "LEGO", "Mattel", "Hasbro", "Nintendo", "PlayStation",
-  "Chanel", "Gucci", "Louis Vuitton", "Prada", "Versace",
-  "Disney", "Netflix", "HBO", "Spotify", "YouTube",
-  "IKEA", "H&M", "Zara", "Uniqlo", "Nike"
+ "Apple", "Microsoft", "Google", "Amazon", "Facebook",
+"CocaCola", "Pepsi", "Fanta", "Sprite", "DrPepper",
+"Nike", "Adidas", "Puma", "Reebok", "UnderArmour",
+"Mercedes", "BMW", "Audi", "Volkswagen", "Porsche",
+"McDonalds", "Subway", "KFC", "PizzaHut", "Starbucks",
+"Samsung", "Sony", "LG", "Panasonic", "Philips",
+"LEGO", "Mattel", "Hasbro", "Nintendo", "PlayStation",
+"Chanel", "Gucci", "LouisVuitton", "Prada", "Versace",
+"Disney", "Netflix", "Spotify", "YouTube",
+"IKEA", "HM", "Zara", "Uniqlo", "Nike",
+"TikTok", "Snapchat", "Twitter", "Reddit", "Pinterest",
+"Intel", "AMD", "Dell", "HP", "Lenovo",
+"Ford", "Toyota", "Honda", "Hyundai", "Kia",
+"Visa", "Mastercard", "PayPal", "Uber",
+"eBay", "Shopify", "Zoom", "Slack", "Dropbox",
+"Canon", "Nikon", "GoPro", "DJI", "Fitbit",
+"Rolex", "BurgerKing", "Dominos", "Dunkin", "Chipotle",
+"Xbox", "Tesla", "Boeing", "Airbus", "Bosch",
+"Siemens", "Shell", "Zara", "Nestle", "Kelloggs", 
+"Nutella", "Nestle", "Gillette", "OralB", "Dove", "Nivea",
+"Loreal", "Adidas", "Pampers", "Lego", "Spotify",
+"Marvel", "Pixar", "Playboy", "TikTok", "YouTube"
 ];
 
 // Themenliste zur besseren Verwaltung
@@ -653,7 +690,11 @@ export default function AnimeImposterGame() {
 
   async function submitImposterGuess() {
     if (myRole === "Imposter" && !imposterGuessed && roomCode) {
-      const isCorrect = imposterGuess.trim().toLowerCase() === commonRole.trim().toLowerCase();
+      const isCorrect = commonRole
+  .toLowerCase()
+  .split(" ")
+  .some(word => word === imposterGuess.trim().toLowerCase());
+
       
       // Markiere, dass der Imposter geraten hat
       await update(ref(db, `rooms/${roomCode}`), { 
