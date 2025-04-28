@@ -972,9 +972,7 @@ const imposterInputStyle = {
         </div>
       ) : !hasJoined ? (
         <>
-          <h1 style={{ ...titleStyle, cursor: "pointer" }} onClick={returnToHome}>
-           Imposter Game
-          </h1>
+          <h1 style={{ ...titleStyle, cursor: "pointer" }} onClick={returnToHome}> Imposter Game </h1>
 
   
           {!roomCode ? (
@@ -1091,7 +1089,7 @@ const imposterInputStyle = {
         </>
       ) : (
         <>
-          <h1 style={titleStyle}>Imposter Game</h1>
+          <h1 style={{ ...titleStyle, cursor: "pointer" }} onClick={returnToHome}> Imposter Game </h1>
           <h2 style={{ fontSize: "48px", marginBottom: "20px" }}>Raum-Code: {roomCode}</h2>
 
           <div style={{ backgroundColor: "rgba(0,0,0,0.5)", padding: "40px", borderRadius: "15px", width: "100%", maxWidth: "1000px", marginTop: "20px" }}>
