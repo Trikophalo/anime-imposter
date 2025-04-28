@@ -742,7 +742,7 @@ export default function AnimeImposterGame() {
               </motion.div>
 
               <div style={{marginTop: "60px"}}>
-                <h3 style={{fontSize: "56px", marginBottom: "30px", fontWeight: "bold", color: "#ef7f00"}}>Es beginnt: {players[startingPlayer].name}</h3>
+                {players.find(p => p.name === playerName && p.id === hostId) && ( <h3 style={{fontSize: "56px", marginBottom: "30px", fontWeight: "bold", color: "#ef7f00"}}>Es beginnt: {players[startingPlayer].name}</h3>)}
                 <h3 style={{fontSize: "56px", marginBottom: "30px", fontWeight: "bold"}}>Wähle den Imposter:</h3>
                 <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px"}}>
                   {players.map((player) => (
