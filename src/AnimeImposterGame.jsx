@@ -5,6 +5,8 @@ import { db } from "./firebaseConfig";
 import { ref, set, push, onValue, update, get } from "firebase/database";
 import BACKGROUND_MUSIC_URL from "./Lofi.mp3";
 import ChatBox from "./ChatBox"; // oder wo du sie speicherst
+import MusicPlayer from "./MusicPlayer";
+
 
 // Anime-Charaktere (bereits vorhanden)
 const animeCharacters = [
@@ -190,82 +192,6 @@ const SimpleQuestionMarksBackground = () => {
   );
 };
 
-// MusicPlayer Komponente
-const MusicPlayer = () => {
-  const [volume, setVolume] = useState(0.1);
-  const [isMuted, setIsMuted] = useState(false);
-  const audioRef = useRef(null);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = isMuted ? 0 : volume;
-    }
-  }, [volume, isMuted]);
-  
-
-  useEffect(() => {
-    const handleUserGesture = () => {
-      if (audioRef.current) {
-        audioRef.current.play().catch((err) => {
-          console.log('Audio konnte nicht automatisch gestartet werden:', err);
-        });
-      }
-      document.removeEventListener('click', handleUserGesture);
-    };
-
-    document.addEventListener('click', handleUserGesture);
-
-    return () => {
-      document.removeEventListener('click', handleUserGesture);
-    };
-  }, []);
-
-  return (
-    <div style={{
-      position: "fixed",
-      top: "20px",
-      right: "20px",
-      backgroundColor: "rgba(0,0,0,0.5)",
-      padding: "10px",
-      borderRadius: "12px",
-      display: "flex",
-      alignItems: "center",
-      zIndex: 100
-    }}>
-      <audio ref={audioRef} loop>
-        <source src={BACKGROUND_MUSIC_URL} />
-        Dein Browser unterstützt kein Audio-Element.
-      </audio>
-
-      <button 
-        onClick={() => setIsMuted(!isMuted)}
-        style={{
-          backgroundColor: "transparent",
-          border: "none",
-          cursor: "pointer",
-          color: "white",
-          fontSize: "24px",
-          marginRight: "10px"
-        }}
-      >
-        {isMuted ? "🔇" : "🔊"}
-      </button>
-
-      <input 
-        type="range" 
-        min="0" 
-        max="1" 
-        step="0.01" 
-        value={volume}
-        onChange={(e) => setVolume(parseFloat(e.target.value))}
-        style={{
-          width: "100px",
-          accentColor: "#ff3366"
-        }}
-      />
-    </div>
-  );
-};
 
 // CopyToClipboard Komponente
 const CopyToClipboard = ({ text }) => {
@@ -906,7 +832,7 @@ const imposterInputStyle = {
     }}>
       <h3 style={{ marginBottom: "20px" }}>Wie funktioniert das Spiel?</h3>
       <p style={{ fontSize: "30px", marginBottom: "20px", fontWeight: "500", fontFamily: "monospace", whiteSpace: "pre-line" }}>
-        Alle Spieler bekommen ein geheimes Wort.<br /> 
+        Alle Spieler bekommen ein gemeinsames Wort.<br /> 
         Ein Spieler ist der Imposter und kennt das Wort nicht.<br /> 
         <br />
         Ihr müsst euch gegenseitig Fragen stellen, um herauszufinden, wer der Imposter ist.<br />
@@ -932,6 +858,7 @@ const imposterInputStyle = {
     </div>
   </div>
 )}
+
 
       <MusicPlayer />
       <ChatBox roomCode={roomCode} playerName={playerName} />
@@ -972,7 +899,7 @@ const imposterInputStyle = {
         </div>
       ) : !hasJoined ? (
         <>
-          <h1 style={{ ...titleStyle, cursor: "pointer" }} onClick={returnToHome}> Imposter Game </h1>
+          <h1 style={{ ...titleStyle, cursor: "pointer" }} onClick={returnToHome} > Imposter Game </h1>
 
   
           {!roomCode ? (
@@ -992,6 +919,8 @@ const imposterInputStyle = {
                   cursor: "pointer",
                   boxShadow: "0 6px 12px rgba(0,0,0,0.3)"
                 }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = "#27902b"}
+                onMouseLeave={(e) => e.target.style.backgroundColor = "#4caf50"}
               >
                 ➕ Neuen Raum erstellen
               </button>
@@ -1027,6 +956,8 @@ const imposterInputStyle = {
                   cursor: "pointer",
                   boxShadow: "0 6px 12px rgba(0,0,0,0.3)"
                 }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = "#279cd0"}
+                onMouseLeave={(e) => e.target.style.backgroundColor = "#39c2ff"}
               >
                 Raum beitreten
               </button>
@@ -1081,6 +1012,8 @@ const imposterInputStyle = {
                   width: "30%",
                   transition: "background-color 0.3s ease"
                 }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = "#279cd0"}
+                onMouseLeave={(e) => e.target.style.backgroundColor = "#39c2ff"}
               >
                 Beitreten
               </button>
@@ -1140,7 +1073,7 @@ const imposterInputStyle = {
 
           {gameStarted && (
             <div style={{ backgroundColor: "rgba(0,0,0,0.5)", padding: "40px", borderRadius: "15px", width: "100%", maxWidth: "1000px", marginTop: "30px", textAlign: "center" }}>
-              <h3 style={{ fontSize: "42px", marginBottom: "30px" }}>Deine Rolle:</h3>
+              <h3 style={{ fontSize: "42px", marginBottom: "30px" }}>Dein Wort:</h3>
               <p style={{ fontSize: "60px", fontWeight: "bold", color: myRole === "Imposter" ? "#ff3366" : "#39c2ff" }}>
                 {myRole === "Imposter" ? "Du bist der Imposter!" : myRole}
               </p>
