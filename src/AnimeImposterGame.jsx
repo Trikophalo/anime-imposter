@@ -9,16 +9,14 @@ import ChatBox from "./ChatBox"; // oder wo du sie speicherst
 
 // Anime-Charaktere (bereits vorhanden)
 const animeCharacters = [
-  "Naruto Uzumaki", "Sasuke Uchiha", "Sakura Haruno", "Kakashi Hatake",
-  "Monkey D. Luffy", "Roronoa Zoro", "Nami", "Sanji", "Tony Tony Chopper",
-  "Portgas D. Ace", "Goku", "Vegeta", "Piccolo", "Gohan", "Frieza",
-  "Light Yagami", "L Lawliet", "Ryuk", "Edward Elric", "Alphonse Elric",
-  "Roy Mustang", "Winry Rockbell", "Ichigo Kurosaki", "Rukia Kuchiki",
+  "Naruto Uzumaki", "Sasuke Uchiha", "Sakura", "Kakashi Hatake",
+  "Monkey D. Luffy", "Roronoa Zoro", "Nami", "Sanji", "Goku", "Vegeta", "Piccolo", "Gohan", "Frieza",
+  "Light Yagami", "L Lawliet", "Ryuk", "Edward Elric", "Ichigo Kurosaki",
   "Uryu Ishida", "Orihime Inoue", "Saitama", "Genos", "Tatsumaki",
   "Mumen Rider", "Levi Ackerman", "Eren Yeager", "Mikasa Ackerman",
   "Armin Arlert", "Erwin Smith", "Rem", "Emilia", "Subaru Natsuki",
-  "Natsu Dragneel", "Lucy Heartfilia", "Gray Fullbuster", "Erza Scarlet",
-  "Saber", "Kirito", "Asuna", "Zero Two", "Ken Kaneki", "Touka Kirishima",
+  "Natsu Dragneel", "Kirito", "Asuna", 
+  "Zero Two", "Ken Kaneki", "Touka Kirishima",
   "Shoto Todoroki", "Izuku Midoriya"
 ];
 
@@ -78,7 +76,7 @@ const themes = [
 
 
 // Simple moving Question Marks (smooth, sehr transparent, alle bewegen sich)
-const SimpleQuestionMarksBackground = () => {
+  const SimpleQuestionMarksBackground = () => {
   const numberOfMarks = 12; // 12 große Fragezeichen
   const [questionMarks, setQuestionMarks] = useState(
     Array.from({ length: numberOfMarks }).map(() => ({
@@ -314,6 +312,8 @@ export default function AnimeImposterGame() {
   const [countdown, setCountdown] = useState(5);
   const [selectedTheme, setSelectedTheme] = useState(0); // Standard: Anime Charaktere
   const [roomTheme, setRoomTheme] = useState(0); // Der im Raum ausgewählte Theme-Index
+  const [startingPlayer, setStartingPlayer] = useState(0);
+
 
   useEffect(() => {
     if (roomCode) {
@@ -475,7 +475,7 @@ export default function AnimeImposterGame() {
 
   async function startGame() {
     if (!players.length) return;
-
+    setStartingPlayer(Math.floor(Math.random() * players.length));
     const imposterIndex = Math.floor(Math.random() * players.length);
     // Verwende das ausgewählte Thema
     const themeItems = themes[roomTheme].items;
@@ -499,7 +499,7 @@ export default function AnimeImposterGame() {
     const playersSnapshot = await get(ref(db, `rooms/${roomCode}/players`));
     const playersData = playersSnapshot.val();
     const playerList = playersData ? Object.values(playersData) : [];
-
+    setStartingPlayer(Math.floor(Math.random() * players.length));
     const imposterIndex = Math.floor(Math.random() * playerList.length);
     // Verwende das ausgewählte Thema
     const themeItems = themes[roomTheme].items;
@@ -534,7 +534,6 @@ export default function AnimeImposterGame() {
     alignItems: "center",
     padding: "40px",
     minHeight: "100vh",
-    // backgroundColor: "#1a1a6a", // Entfernen Sie diese Zeile
     color: "white",
     fontSize: "36px",
     position: "relative",
@@ -630,10 +629,10 @@ export default function AnimeImposterGame() {
             <>
               <h1 style={titleStyle}>Guess the Imposter 👩‍🦯‍➡️</h1>
               <button 
-                style={{...buttonStyle, margin: "100px", backgroundColor: "#00e964", fontSize: "50px", width: "50%"}}
+                style={{...buttonStyle, margin: "100px", backgroundColor: "#00c71e", fontSize: "50px", width: "50%"}}
                 onClick={createRoom}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#00ad4a"}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#00e964"}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#00a419"}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#00c71e"}
               >
                 Neuen Raum erstellen
               </button>
@@ -743,6 +742,7 @@ export default function AnimeImposterGame() {
               </motion.div>
 
               <div style={{marginTop: "60px"}}>
+                <h3 style={{fontSize: "56px", marginBottom: "30px", fontWeight: "bold", color: "#ef7f00"}}>Es beginnt: {players[startingPlayer].name}</h3>
                 <h3 style={{fontSize: "56px", marginBottom: "30px", fontWeight: "bold"}}>Wähle den Imposter:</h3>
                 <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px"}}>
                   {players.map((player) => (
