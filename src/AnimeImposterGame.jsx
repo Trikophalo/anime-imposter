@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { motion } from "framer-motion";
 import { db } from "./firebaseConfig";
 import { ref, set, push, onValue, update, get } from "firebase/database";
-import BACKGROUND_MUSIC_URL from "./Quizshow.mp3";
+import BACKGROUND_MUSIC_URL from "./Lofi.mp3";
 import ChatBox from "./ChatBox"; // oder wo du sie speicherst
 
 // Anime-Charaktere (bereits vorhanden)
@@ -342,6 +342,7 @@ export default function AnimeImposterGame() {
   const [roomTheme, setRoomTheme] = useState(0); // Der im Raum ausgewählte Theme-Index
   const [startingPlayer, setStartingPlayer] = useState(0);
   const [shouldStartNewGame, setShouldStartNewGame] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   // Neue Zustände für die Imposter-Erraten-Funktionalität
   const [imposterGuess, setImposterGuess] = useState("");
@@ -834,6 +835,71 @@ const imposterInputStyle = {
   return (
     <div style={mainContainerStyle}>
       <SimpleQuestionMarksBackground />
+
+      <div style={{
+  position: "fixed",
+  top: "60px",
+  left: "60px",
+  zIndex: 200,
+  cursor: "pointer",
+  fontSize: "70px",
+  color: "white"
+}} onClick={() => setShowHelp(true)}>
+  ❓
+</div>
+
+{showHelp && (
+  <div style={{
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0,0,0,0.8)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 300
+  }}>
+    <div style={{
+      backgroundColor: "white",
+      color: "black",
+      padding: "30px",
+      borderRadius: "15px",
+      width: "100%",
+      maxWidth: "700px",
+      textAlign: "center",
+      position: "relative"
+    }}>
+      <h3 style={{ marginBottom: "20px" }}>Wie funktioniert das Spiel?</h3>
+      <p style={{ fontSize: "30px", marginBottom: "20px", fontWeight: "500", fontFamily: "monospace", whiteSpace: "pre-line" }}>
+        Alle Spieler bekommen ein geheimes Wort.<br /> 
+        Ein Spieler ist der Imposter und kennt das Wort nicht.<br /> 
+        <br />
+        Ihr müsst euch gegenseitig Fragen stellen, um herauszufinden, wer der Imposter ist.<br />
+        Der Imposter muss versuchen, so zu tun, als wüsste er das Wort!<br />
+        <br />
+        Der Imposter gewinnt das Spiel wenn er das richtige Wort eintippt, oder wenn er nicht von der Mehrheit gevotet wird.<br />
+      </p>
+      <button
+        onClick={() => setShowHelp(false)}
+        style={{
+          marginTop: "20px",
+          padding: "10px 20px",
+          fontSize: "22px",
+          backgroundColor: "#ff3366",
+          color: "white",
+          border: "none",
+          borderRadius: "10px",
+          cursor: "pointer"
+        }}
+      >
+        Schließen
+      </button>
+    </div>
+  </div>
+)}
+
       <MusicPlayer />
       <ChatBox roomCode={roomCode} playerName={playerName} />
   

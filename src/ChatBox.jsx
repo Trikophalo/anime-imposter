@@ -96,8 +96,8 @@ const ChatBox = ({ roomCode, playerName }) => {
   return (
     <div style={{
       position: "fixed",
-      bottom: "20px",
-      left: "20px",
+      bottom: "60px",
+      left: "60px",
       zIndex: 100
     }}>
       {!isOpen ? (
@@ -107,9 +107,9 @@ const ChatBox = ({ roomCode, playerName }) => {
             backgroundColor: "#39c2ff",
             border: "none",
             borderRadius: "50%",
-            width: "70px", // Größerer Button
-            height: "70px",
-            fontSize: "35px", // Größere Schrift
+            width: "90px", // Größerer Button
+            height: "90px",
+            fontSize: "60px", // Größere Schrift
             color: "white",
             cursor: "pointer",
             boxShadow: "0 4px 8px rgba(0,0,0,0.5)",
