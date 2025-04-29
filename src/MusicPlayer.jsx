@@ -1,7 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import BACKGROUND_MUSIC_URL from "./Lofi.mp3";
-import BACKGROUND_MUSIC_URL_2 from "./Domestic.mp3";
-import BACKGROUND_MUSIC_URL_3 from "./Paradise.mp3";
+import BACKGROUND_MUSIC_URL_2 from "./Musik1.mp3";
+import BACKGROUND_MUSIC_URL_3 from "./Musik2.mp3";
+import BACKGROUND_MUSIC_URL_4 from "./Musik3.mp3";
+import BACKGROUND_MUSIC_URL_5 from "./Musik4.mp3";
+import BACKGROUND_MUSIC_URL_6 from "./Musik5.mp3";
+import BACKGROUND_MUSIC_URL_7 from "./Musik6.mp3";
+import BACKGROUND_MUSIC_URL_8 from "./Musik7.mp3";
 
 export default function MusicPlayer() {
   const [userVolume, setUserVolume] = useState(1);
@@ -12,7 +17,11 @@ export default function MusicPlayer() {
   const musicTracks = [
     { url: BACKGROUND_MUSIC_URL, baseVolume: 0.1 },
     { url: BACKGROUND_MUSIC_URL_2, baseVolume: 0.15 },
-    { url: BACKGROUND_MUSIC_URL_3, baseVolume: 0.05 },
+    { url: BACKGROUND_MUSIC_URL_3, baseVolume: 0.15 },
+    { url: BACKGROUND_MUSIC_URL_4, baseVolume: 0.15 },
+    { url: BACKGROUND_MUSIC_URL_5, baseVolume: 0.15 },
+    { url: BACKGROUND_MUSIC_URL_6, baseVolume: 0.15 },
+    { url: BACKGROUND_MUSIC_URL_7, baseVolume: 0.15 },
   ];
 
   useEffect(() => {
