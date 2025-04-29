@@ -7,6 +7,8 @@ import BACKGROUND_MUSIC_URL_5 from "./Musik4.mp3";
 import BACKGROUND_MUSIC_URL_6 from "./Musik5.mp3";
 import BACKGROUND_MUSIC_URL_7 from "./Musik6.mp3";
 import BACKGROUND_MUSIC_URL_8 from "./Musik7.mp3";
+import BACKGROUND_MUSIC_URL_9 from "./Musik8.mp3";
+import BACKGROUND_MUSIC_URL_10 from "./Musik9.mp3";
 
 export default function MusicPlayer() {
   const [userVolume, setUserVolume] = useState(1);
@@ -15,13 +17,16 @@ export default function MusicPlayer() {
   const audioRef = useRef(null);
 
   const musicTracks = [
-    { url: BACKGROUND_MUSIC_URL, baseVolume: 0.1 },
+    { url: BACKGROUND_MUSIC_URL, baseVolume: 0.15 },
     { url: BACKGROUND_MUSIC_URL_2, baseVolume: 0.15 },
     { url: BACKGROUND_MUSIC_URL_3, baseVolume: 0.15 },
     { url: BACKGROUND_MUSIC_URL_4, baseVolume: 0.15 },
     { url: BACKGROUND_MUSIC_URL_5, baseVolume: 0.15 },
     { url: BACKGROUND_MUSIC_URL_6, baseVolume: 0.15 },
     { url: BACKGROUND_MUSIC_URL_7, baseVolume: 0.15 },
+    { url: BACKGROUND_MUSIC_URL_8, baseVolume: 0.15 },
+    { url: BACKGROUND_MUSIC_URL_9, baseVolume: 0.15 },
+    { url: BACKGROUND_MUSIC_URL_10, baseVolume: 0.15 },
   ];
 
   useEffect(() => {
