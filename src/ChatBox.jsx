@@ -133,7 +133,7 @@ const ChatBox = ({ roomCode, playerName }) => {
               height: "16px",
               backgroundColor: "red",
               borderRadius: "50%",
-              border: "none"
+              border: "2px solid white"
             }}></span>
           )}
         </button>
