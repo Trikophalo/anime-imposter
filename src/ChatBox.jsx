@@ -1,16 +1,16 @@
 import { useState, useEffect, useRef } from "react";
-import { db } from "./firebaseConfig"; // Deine Firebase-Konfiguration
-import { ref, push, onValue } from "firebase/database"; // Funktionen von Firebase Realtime Database
-import { off } from "firebase/database"; // <- auch importieren!
+import { db } from "./firebaseConfig";
+import { ref, push, onValue, off } from "firebase/database";
+import { Send } from "lucide-react"; // Papierflieger-Icon
 
 const ChatBox = ({ roomCode, playerName }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [showEmojis, setShowEmojis] = useState(false); // Emojis anzeigen
+  const [showEmojis, setShowEmojis] = useState(false);
+  const [hasNewMessages, setHasNewMessages] = useState(false);
   const messagesEndRef = useRef(null);
   const audioRef = useRef(null);
-
 
   useEffect(() => {
     if (roomCode) {
@@ -18,16 +18,19 @@ const ChatBox = ({ roomCode, playerName }) => {
       const unsubscribe = onValue(chatRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
-          setMessages(Object.values(data));
+          const newMessages = Object.values(data);
+          if (newMessages.length > messages.length && !isOpen) {
+            setHasNewMessages(true);
+          }
+          setMessages(newMessages);
         }
       });
-  
+
       return () => {
-        off(chatRef); // Unsubscribe richtig aufrufen
+        off(chatRef);
       };
     }
-  }, [roomCode]);
-  
+  }, [roomCode, messages.length, isOpen]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -77,7 +80,7 @@ const ChatBox = ({ roomCode, playerName }) => {
         audioRef.current.currentTime = 0;
       }
       const audio = new Audio(soundUrl);
-      audio.volume = 0.5; // 50% Lautstärke
+      audio.volume = 0.5;
       audioRef.current = audio;
       audio.play();
     }
@@ -102,14 +105,18 @@ const ChatBox = ({ roomCode, playerName }) => {
     }}>
       {!isOpen ? (
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={() => {
+            setIsOpen(true);
+            setHasNewMessages(false);
+          }}
           style={{
+            position: "relative",
             backgroundColor: "#39c2ff",
             border: "none",
             borderRadius: "50%",
-            width: "80px", // Größerer Button
+            width: "80px",
             height: "80px",
-            fontSize: "40px", // Größere Schrift
+            fontSize: "40px",
             color: "white",
             cursor: "pointer",
             boxShadow: "0 4px 8px rgba(0,0,0,0.5)",
@@ -117,20 +124,32 @@ const ChatBox = ({ roomCode, playerName }) => {
           }}
         >
           💬
+          {hasNewMessages && (
+            <span style={{
+              position: "absolute",
+              top: "2px",
+              right: "8px",
+              width: "16px",
+              height: "16px",
+              backgroundColor: "red",
+              borderRadius: "50%",
+              border: "none"
+            }}></span>
+          )}
         </button>
       ) : (
         <div style={{
-          width: "400px", // Größerer Container
-          height: "500px", // Größere Höhe
+          width: "400px",
+          height: "500px",
           backgroundColor: "rgba(0,0,0,0.8)",
           borderRadius: "16px",
-          padding: "20px", // Mehr Padding
+          padding: "20px",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
           boxShadow: "0 4px 12px rgba(0,0,0,0.7)",
           color: "white",
-          fontSize: "16px", // Größere Schriftgröße
+          fontSize: "16px",
           transform: "scale(1)",
           animation: "pop 0.3s forwards"
         }}>
@@ -147,7 +166,7 @@ const ChatBox = ({ roomCode, playerName }) => {
                 backgroundColor: "transparent",
                 border: "none",
                 color: "white",
-                fontSize: "25px", // Größere Schrift
+                fontSize: "25px",
                 cursor: "pointer"
               }}
             >
@@ -178,29 +197,48 @@ const ChatBox = ({ roomCode, playerName }) => {
             <div ref={messagesEndRef} />
           </div>
 
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onFocus={() => setShowEmojis(true)} // Emojis anzeigen bei Fokus
-            disabled={!playerName}
-            placeholder={playerName ? "Nachricht eingeben..." : "Bitte erst beitreten..."}
-            style={{
-              border: "none",
-              borderRadius: "12px",
-              padding: "15px", // Größeres Padding
-              width: "100%",
-              fontSize: "16px", // Größere Schriftgröße
-              backgroundColor: playerName ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.05)",
-              color: "white",
-              outline: "none",
-              cursor: playerName ? "text" : "not-allowed",
-              boxSizing: "border-box",
-              marginBottom: "15px"
-            }}
-          />
+          {/* Eingabefeld mit Senden-Button */}
+          <div style={{ display: "flex", gap: "8px", marginBottom: "15px" }}>
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onFocus={() => setShowEmojis(true)}
+              disabled={!playerName}
+              placeholder={playerName ? "Nachricht eingeben..." : "Bitte erst beitreten..."}
+              style={{
+                flex: 1,
+                border: "none",
+                borderRadius: "12px",
+                padding: "15px",
+                fontSize: "16px",
+                backgroundColor: playerName ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.05)",
+                color: "white",
+                outline: "none",
+                cursor: playerName ? "text" : "not-allowed",
+                boxSizing: "border-box"
+              }}
+            />
+            <button
+              onClick={sendMessage}
+              disabled={!playerName || input.trim() === ""}
+              title={!playerName ? "Bitte beitreten" : input.trim() === "" ? "Nachricht eingeben" : "Senden"}
+              style={{
+                backgroundColor: "#39c2ff",
+                border: "none",
+                borderRadius: "12px",
+                padding: "12px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: playerName && input.trim() !== "" ? "pointer" : "not-allowed",
+                opacity: playerName && input.trim() !== "" ? 1 : 0.5
+              }}
+            >
+              <Send size={20} color="white" />
+            </button>
+          </div>
 
-          {/* Emoji Auswahl */}
           {showEmojis && (
             <div style={{
               marginBottom: "15px",
@@ -214,8 +252,8 @@ const ChatBox = ({ roomCode, playerName }) => {
                   key={emoji}
                   onClick={() => setInput(input + emoji)}
                   style={{
-                    fontSize: "24px", // Größere Emojis
-                    padding: "8px", // Mehr Abstand für bessere Klickbarkeit
+                    fontSize: "24px",
+                    padding: "8px",
                     borderRadius: "8px",
                     border: "none",
                     backgroundColor: "rgba(255,255,255,0.1)",
@@ -229,7 +267,6 @@ const ChatBox = ({ roomCode, playerName }) => {
             </div>
           )}
 
-          {/* Sound Buttons */}
           <div style={{ display: "flex", gap: "15px", marginTop: "15px" }}>
             <button
               onClick={() => sendSoundMessage("alarm")}
@@ -238,8 +275,8 @@ const ChatBox = ({ roomCode, playerName }) => {
                 backgroundColor: "#ff3366",
                 border: "none",
                 borderRadius: "12px",
-                padding: "12px", // Größeres Padding
-                fontSize: "18px", // Größere Schriftgröße
+                padding: "12px",
+                fontSize: "18px",
                 color: "white",
                 cursor: "pointer"
               }}
@@ -253,8 +290,8 @@ const ChatBox = ({ roomCode, playerName }) => {
                 backgroundColor: "#00cc66",
                 border: "none",
                 borderRadius: "12px",
-                padding: "12px", // Größeres Padding
-                fontSize: "18px", // Größere Schriftgröße
+                padding: "12px",
+                fontSize: "18px",
                 color: "white",
                 cursor: "pointer"
               }}
@@ -265,7 +302,6 @@ const ChatBox = ({ roomCode, playerName }) => {
         </div>
       )}
 
-      {/* Animationen */}
       <style>
         {`
           @keyframes pulse {
