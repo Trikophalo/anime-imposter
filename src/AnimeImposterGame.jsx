@@ -907,7 +907,7 @@ const imposterInputStyle = {
             width: "22vw",  // 20% der Bildschirmbreite
             maxWidth: "800px", // aber maximal 400px groß
             cursor: "pointer",
-            marginTop: "10px",
+            marginTop: "0vw",
             filter: "drop-shadow(3px 3px 6px rgba(0,0,0,0.5))",
             transition: "transform 0.3s ease-in-out"
           }}
@@ -927,11 +927,11 @@ const imposterInputStyle = {
                   color: "white",
                   fontWeight: "bold",
                   padding: "20px 40px",
-                  fontSize: "36px",
+                  fontSize: "1.8vw",
                   borderRadius: "15px",
                   border: "none",
                   marginTop: "40px",
-                  marginBottom: "180px",
+                  marginBottom: "5vw",
                   cursor: "pointer",
                   boxShadow: "0 6px 12px rgba(0,0,0,0.3)"
                 }}
@@ -966,7 +966,7 @@ const imposterInputStyle = {
                   color: "white",
                   fontWeight: "bold",
                   padding: "15px 30px",
-                  fontSize: "32px",
+                  fontSize: "1.5vw",
                   borderRadius: "12px",
                   border: "none",
                   cursor: "pointer",
