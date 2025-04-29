@@ -828,20 +828,20 @@ const imposterInputStyle = {
       padding: "30px",
       borderRadius: "15px",
       width: "100%",
-      maxWidth: "700px",
+      maxWidth: "780px",
       textAlign: "center",
       position: "relative"
     }}>
       <h3 style={{ marginBottom: "20px" }}>Wie funktioniert das Spiel?</h3>
-      <p style={{ fontSize: "30px", marginBottom: "20px", fontWeight: "500", fontFamily: "monospace", whiteSpace: "pre-line" }}>
-        Alle Spieler bekommen ein gemeinsames Wort.<br /> 
-        Ein Spieler ist der Imposter und kennt das Wort nicht.<br /> 
+      <p style={{ fontSize: "28px", marginBottom: "20px", fontWeight: "500", fontFamily: "monospace", whiteSpace: "pre-line" }}>
+        1. Alle Spieler bis auf den Imposter erhalten denselben Begriff. ✏️<br /> <br />
+        2. Reihum nennt jeder ein passendes Wort zum <br />Begriff, um den Imposter zu entlarven.<br /> 
+        (Der Imposter muss sich nun <br />unaufällig untermischen. 🤫)<br /><br />
+        3. Der Imposter gewinnt, wenn er den genauen Begriff errät und abschickt,
+        oder wenn <br />er nicht von der Mehrheit gevotet wird.<br />
         <br />
-        Ihr müsst nun nacheinander jeweils ein Wort passend zum Begriff aufsagen, um herauszufinden, wer der Imposter ist.<br />
-        Der Imposter muss versuchen, so zu tun, als wüsste er das Wort!<br />
-        Am besten also nicht zu offensichtlich sein, sont weis der Imposter direkt welches Wort gemeint ist.<br />
-        <br />
-        Der Imposter gewinnt das Spiel wenn er das richtige Wort eintippt, oder wenn er nicht von der Mehrheit gevotet wird.<br />
+        Er verliert wenn er einen falschen Bergriff absendet,
+        oder die Mehrheit für ihn votet.
       </p>
       <button
         onClick={() => setShowHelp(false)}
