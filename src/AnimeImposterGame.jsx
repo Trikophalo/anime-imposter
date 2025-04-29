@@ -865,7 +865,7 @@ const imposterInputStyle = {
   
       {showResults ? (
         <div style={{ marginTop: "80px", textAlign: "center" }}>
-          <h2 style={{ fontSize: "72px", marginBottom: "40px", fontWeight: "bold" }}>Ergebnisse</h2>
+          <h2 style={{ fontSize: "72px", marginBottom: "40px", fontWeight: "bold" }}>Ergebnisse<br /><br /></h2>
   
           {gameEndReason === "imposterGuess" ? (
             <>
@@ -874,7 +874,7 @@ const imposterInputStyle = {
                 {imposterWon ? " das Wort richtig erraten!" : " das Wort falsch erraten!"}
               </p>
               <p style={{ fontSize: "48px", marginBottom: "30px" }}>
-                Das richtige Wort war: <span style={{ fontWeight: "bold" }}>{commonRole}</span>
+                Das richtige Wort war: <span style={{ fontWeight: "bold" }}>{commonRole}<br /><br /><br /></span>
               </p>
               <p style={{ fontSize: "60px", marginBottom: "30px", color: imposterWon ? "#ff3366" : "#4caf50", fontWeight: "bold" }}>
                 {imposterWon ? "Der Imposter hat gewonnen!" : "Der Imposter hat verloren!"}
@@ -899,7 +899,23 @@ const imposterInputStyle = {
         </div>
       ) : !hasJoined ? (
         <>
-          <h1 style={{ ...titleStyle, cursor: "pointer" }} onClick={returnToHome} > Imposter Game </h1>
+        <img 
+          src="/pics/GameIcon.png" 
+          alt="Imposter Game Logo"
+          onClick={returnToHome}
+          style={{
+            width: "22vw",  // 20% der Bildschirmbreite
+            maxWidth: "800px", // aber maximal 400px groß
+            cursor: "pointer",
+            marginTop: "20px",
+            filter: "drop-shadow(3px 3px 6px rgba(0,0,0,0.5))",
+            transition: "transform 0.3s ease-in-out"
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.1)"}
+          onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+        />
+
+
 
   
           {!roomCode ? (
@@ -914,7 +930,7 @@ const imposterInputStyle = {
                   fontSize: "36px",
                   borderRadius: "15px",
                   border: "none",
-                  marginTop: "90px",
+                  marginTop: "40px",
                   marginBottom: "180px",
                   cursor: "pointer",
                   boxShadow: "0 6px 12px rgba(0,0,0,0.3)"
@@ -1022,7 +1038,7 @@ const imposterInputStyle = {
         </>
       ) : (
         <>
-          <h1 style={{ ...titleStyle, cursor: "pointer" }} onClick={returnToHome}> Imposter Game </h1>
+          <h3 style={{ ...titleStyle, cursor: "pointer" }} onClick={returnToHome}> Who will be the Imposter? </h3>
           <h2 style={{ fontSize: "48px", marginBottom: "20px" }}>Raum-Code: {roomCode}</h2>
 
           <div style={{ backgroundColor: "rgba(0,0,0,0.5)", padding: "40px", borderRadius: "15px", width: "100%", maxWidth: "1000px", marginTop: "20px" }}>
@@ -1060,6 +1076,8 @@ const imposterInputStyle = {
                 style={{ ...buttonStyle, marginTop: "40px", backgroundColor: "#ff3366", width: "50%" }}
                 onClick={startGame}
                 disabled={players.length < 3}
+                onMouseEnter={(e) => e.target.style.backgroundColor = "#279cd0"}
+                onMouseLeave={(e) => e.target.style.backgroundColor = "#ff3366"}
               >
                 Spiel starten
               </button>
@@ -1092,6 +1110,8 @@ const imposterInputStyle = {
                     style={imposterSubmitButtonStyle}
                     onClick={submitImposterGuess}
                     disabled={!imposterGuess.trim()}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = "#279cd0"}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = "#39c2ff"}
                   >
                     Erraten
                   </button>

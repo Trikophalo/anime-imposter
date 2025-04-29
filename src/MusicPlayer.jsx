@@ -1,150 +1,157 @@
-// MusicPlayer.jsx
 import { useState, useEffect, useRef } from "react";
 import BACKGROUND_MUSIC_URL from "./Lofi.mp3";
 import BACKGROUND_MUSIC_URL_2 from "./Domestic.mp3";
 import BACKGROUND_MUSIC_URL_3 from "./Paradise.mp3";
 
 export default function MusicPlayer() {
-  const [volume, setVolume] = useState(0.1);
+  const [userVolume, setUserVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const audioRef = useRef(null);
 
-  const musicTracks = [BACKGROUND_MUSIC_URL, BACKGROUND_MUSIC_URL_2, BACKGROUND_MUSIC_URL_3];
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = isMuted ? 0 : volume;
-    }
-  }, [volume, isMuted]);
+  const musicTracks = [
+    { url: BACKGROUND_MUSIC_URL, baseVolume: 0.1 },
+    { url: BACKGROUND_MUSIC_URL_2, baseVolume: 0.15 },
+    { url: BACKGROUND_MUSIC_URL_3, baseVolume: 0.05 },
+  ];
 
   useEffect(() => {
     const handleUserGesture = () => {
       if (audioRef.current) {
+        const currentTrack = musicTracks[currentTrackIndex];
+        audioRef.current.src = currentTrack.url;
+        audioRef.current.volume = isMuted ? 0 : currentTrack.baseVolume * userVolume;
+        audioRef.current.loop = true;
         audioRef.current.play().catch((err) => {
-          console.log('Audio konnte nicht automatisch gestartet werden:', err);
+          console.log("Audio konnte nicht automatisch gestartet werden:", err);
         });
       }
-      document.removeEventListener('click', handleUserGesture);
+      document.removeEventListener("click", handleUserGesture);
     };
 
-    document.addEventListener('click', handleUserGesture);
-
+    document.addEventListener("click", handleUserGesture);
     return () => {
-      document.removeEventListener('click', handleUserGesture);
+      document.removeEventListener("click", handleUserGesture);
     };
   }, []);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.src = musicTracks[currentTrackIndex].url;
+      audioRef.current.loop = true;
+      const finalVolume = isMuted ? 0 : musicTracks[currentTrackIndex].baseVolume * userVolume;
+      audioRef.current.volume = Math.min(finalVolume, 1);
+      audioRef.current.play().catch((err) => console.log("Fehler beim Abspielen", err));
+    }
+  }, [currentTrackIndex]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      const finalVolume = isMuted ? 0 : musicTracks[currentTrackIndex].baseVolume * userVolume;
+      audioRef.current.volume = Math.min(finalVolume, 1);
+    }
+  }, [userVolume, isMuted, currentTrackIndex]);
+
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+  };
 
   const handleChangeMusic = () => {
     setCurrentTrackIndex((prevIndex) => (prevIndex + 1) % musicTracks.length);
   };
 
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.src = musicTracks[currentTrackIndex];
-      audioRef.current.play().catch((err) => console.log("Fehler beim Abspielen", err));
-    }
-  }, [currentTrackIndex]);
-
   return (
     <>
-      <div style={{
-        position: "fixed",
-        top: "40px",
-        right: "40px",
-        backgroundColor: "rgba(0,0,0,0.5)",
-        padding: "10px",
-        borderRadius: "12px",
-        display: "flex",
-        alignItems: "center",
-        zIndex: 100
-      }}>
-        <audio ref={audioRef} loop>
-          <source src={musicTracks[currentTrackIndex]} />
-          Dein Browser unterstützt kein Audio-Element.
-        </audio>
+      <audio ref={audioRef} preload="auto">
+        <source src={musicTracks[currentTrackIndex].url} />
+        Dein Browser unterstützt kein Audio-Element.
+      </audio>
 
-        <button 
-          onClick={() => setIsMuted(!isMuted)}
+      {/* Lautstärke-Einstellung */}
+      <div
+        style={{
+          position: "fixed",
+          top: "40px",
+          right: "40px",
+          backgroundColor: "rgba(0,0,0,0.5)",
+          padding: "10px",
+          borderRadius: "12px",
+          display: "flex",
+          alignItems: "center",
+          zIndex: 9999,
+        }}
+      >
+        <button
+          onClick={toggleMute}
           style={{
             backgroundColor: "transparent",
             border: "none",
             cursor: "pointer",
             color: "white",
             fontSize: "24px",
-            marginRight: "10px"
+            marginRight: "10px",
           }}
         >
           {isMuted ? "🔇" : "🔊"}
         </button>
 
-        <input 
-          type="range" 
-          min="0" 
-          max="1" 
-          step="0.01" 
-          value={volume}
-          onChange={(e) => setVolume(parseFloat(e.target.value))}
+        <input
+          type="range"
+          min="0"
+          max="2"
+          step="0.01"
+          value={userVolume}
+          onChange={(e) => setUserVolume(parseFloat(e.target.value))}
           style={{
             width: "100px",
-            accentColor: "#ff3366"
+            accentColor: "#ff3366",
           }}
         />
       </div>
 
-      <button 
-    onClick={handleChangeMusic}
-    style={{
-      position: "fixed",
-      bottom: "60px",
-      right: "60px",
-      background: "linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet)",
-      backgroundSize: "400% 400%",
-      animation: "rainbowBackground 8s ease infinite",
-      border: "none",
-      borderRadius: "50%",
-      width: "50px",
-      height: "50px",
-      padding: "0",
-      overflow: "hidden",
-      cursor: "pointer",
-      zIndex: 100,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
-    }}
-    title="Musik wechseln"
-  >
-    <img 
-      src="/pics/MusicIcons.png" 
-      alt="Musik wechseln" 
-      style={{ 
-        width: "60%", 
-        height: "60%", 
-        objectFit: "contain", 
-        borderRadius: "50%",
-        backgroundColor: "transparent",
-        zIndex: 2,
-        pointerEvents: "none",
-        animation: "pulse 2s infinite ease-in-out"
-      }} 
-    />
-  </button>
+      {/* Musik-Wechsel-Button mit Hover-Effekt */}
+      <div
+        onClick={handleChangeMusic}
+        title="Musik wechseln"
+        style={{
+          position: "fixed",
+          bottom: "30px",
+          right: "30px",
+          width: "190px",
+          height: "190px",
+          zIndex: 9999,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "transparent",
+          borderRadius: "50%",
+          cursor: "pointer",
+          transition: "transform 0.2s ease-in-out",
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.2)")}
+        onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+      >
+        <img
+          src="/pics/Radio_Icon.png"
+          alt="Musik wechseln"
+          style={{
+            width: "60%",
+            height: "60%",
+            objectFit: "contain",
+            borderRadius: "50%",
+            backgroundColor: "transparent",
+            animation: "pulse 2s infinite ease-in-out",
+          }}
+        />
+      </div>
 
-  <style>{`
-    @keyframes rainbowBackground {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1.8); }
-      50% { transform: scale(2.1); }
-      100% { transform: scale(1.8); }
-    }
-  `}</style>
-
+      <style>{`
+        @keyframes pulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+          100% { transform: scale(1); }
+        }
+      `}</style>
     </>
   );
 }
