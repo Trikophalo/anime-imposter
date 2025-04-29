@@ -907,7 +907,7 @@ const imposterInputStyle = {
             width: "22vw",  // 20% der Bildschirmbreite
             maxWidth: "800px", // aber maximal 400px groß
             cursor: "pointer",
-            marginTop: "20px",
+            marginTop: "10px",
             filter: "drop-shadow(3px 3px 6px rgba(0,0,0,0.5))",
             transition: "transform 0.3s ease-in-out"
           }}
