@@ -325,6 +325,7 @@ export default function AnimeImposterGame() {
           setImposterWon(data.imposterWon ?? false);
           setGameEndReason(data.gameEndReason ?? "");
           setImposterName(data.imposterName ?? ""); // NEU hinzugefügt!
+          setStartingPlayer(data.startingPlayerIndex ?? 0);
   
           if (!data.gameStarted && data.imposterGuessed) {
             setShowResults(true);
@@ -556,7 +557,9 @@ export default function AnimeImposterGame() {
   
     if (!playerList.length) return;
   
-    setStartingPlayer(Math.floor(Math.random() * playerList.length));
+    const randomStartingIndex = Math.floor(Math.random() * playerList.length); // ✅ NEU
+    setStartingPlayer(randomStartingIndex); // optional, nur für lokale Anzeige
+  
     const imposterIndex = Math.floor(Math.random() * playerList.length);
     const imposterPlayer = playerList[imposterIndex];
   
@@ -576,15 +579,15 @@ export default function AnimeImposterGame() {
     updates[`rooms/${roomCode}/imposterWon`] = false;
     updates[`rooms/${roomCode}/gameEndReason`] = "";
     updates[`rooms/${roomCode}/votes`] = {};
+    updates[`rooms/${roomCode}/startingPlayerIndex`] = randomStartingIndex; // ✅ NEU
   
-    // 🛠️ Erst ALLES speichern (außer gameStarted)
     await update(ref(db), updates);
   
-    // ✅ Danach separat: gameStarted setzen
     await update(ref(db, `rooms/${roomCode}`), {
       gameStarted: true
     });
   }
+  
   
   
   
@@ -597,6 +600,7 @@ export default function AnimeImposterGame() {
   
     if (!playerList.length) return;
   
+    const randomStartingIndex = Math.floor(Math.random() * playerList.length); // ✅ NEU
     const imposterIndex = Math.floor(Math.random() * playerList.length);
     const imposterPlayer = playerList[imposterIndex];
     const themeItems = themes[roomTheme].items;
@@ -615,12 +619,10 @@ export default function AnimeImposterGame() {
     updates[`rooms/${roomCode}/imposterWon`] = false;
     updates[`rooms/${roomCode}/gameEndReason`] = "";
     updates[`rooms/${roomCode}/votes`] = {};
-  
-    // ❌ NICHT gameStarted hier schon auf true setzen!
+    updates[`rooms/${roomCode}/startingPlayerIndex`] = randomStartingIndex; // ✅ NEU
   
     await update(ref(db), updates);
   
-    // ✅ Jetzt NACHDEM alles geschrieben wurde, "gameStarted" true setzen!
     await update(ref(db, `rooms/${roomCode}`), {
       gameStarted: true
     });
@@ -875,7 +877,7 @@ const imposterInputStyle = {
                 {imposterWon ? " das Wort richtig erraten!" : " das Wort falsch erraten!"}
               </p>
               <p style={{ fontSize: "48px", marginBottom: "30px" }}>
-                Das richtige Wort war: <span style={{ fontWeight: "bold" }}>{commonRole}<br /><br /><br /></span>
+                Das richtige Wort war: <span style={{ fontWeight: "bold" }}>{commonRole}<br /><br /></span>
               </p>
               <p style={{ fontSize: "60px", marginBottom: "30px", color: imposterWon ? "#ff3366" : "#4caf50", fontWeight: "bold" }}>
                 {imposterWon ? "Der Imposter hat gewonnen!" : "Der Imposter hat verloren!"}
@@ -888,7 +890,7 @@ const imposterInputStyle = {
                 Der Imposter war: <span style={{ fontWeight: "bold", color: "#ff3366" }}>{imposterName}</span>
               </p>
               <p style={{ fontSize: "48px", marginBottom: "30px" }}>
-                Das richtige Wort war: <span style={{ fontWeight: "bold" }}>{commonRole}</span>
+                Das richtige Wort war: <span style={{ fontWeight: "bold" }}>{commonRole}<br /><br /></span>
               </p>
               <p style={{ fontSize: "60px", marginBottom: "30px", color: imposterWon ? "#ff3366" : "#4caf50", fontWeight: "bold" }}>
                 {imposterWon ? "Der Imposter hat gewonnen!" : "Der Imposter hat verloren!"}
@@ -1096,7 +1098,10 @@ const imposterInputStyle = {
               <p style={{ fontSize: "60px", fontWeight: "bold", color: myRole === "Imposter" ? "#ff3366" : "#39c2ff" }}>
                 {myRole === "Imposter" ? "Du bist der Imposter!" : myRole}
               </p>
-              <p style={{ fontSize: "32px", marginTop: "30px" }}>Spieler {players[startingPlayer]?.name} beginnt!</p>
+              <p style={{ fontSize: "32px", marginTop: "30px" }}>
+              Spieler <span style={{ color: "#ffd700", fontWeight: "bold" }}>{players[startingPlayer]?.name}</span> beginnt!
+              </p>
+
 
               {myRole === "Imposter" && !imposterGuessed && (
                 <div style={imposterGuessBoxStyle}>
