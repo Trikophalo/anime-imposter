@@ -835,8 +835,9 @@ const imposterInputStyle = {
         Alle Spieler bekommen ein gemeinsames Wort.<br /> 
         Ein Spieler ist der Imposter und kennt das Wort nicht.<br /> 
         <br />
-        Ihr müsst euch gegenseitig Fragen stellen, um herauszufinden, wer der Imposter ist.<br />
+        Ihr müsst nun nacheinander jeweils ein Wort passend zum Begriff aufsagen, um herauszufinden, wer der Imposter ist.<br />
         Der Imposter muss versuchen, so zu tun, als wüsste er das Wort!<br />
+        Am besten also nicht zu offensichtlich sein, sont weis der Imposter direkt welches Wort gemeint ist.<br />
         <br />
         Der Imposter gewinnt das Spiel wenn er das richtige Wort eintippt, oder wenn er nicht von der Mehrheit gevotet wird.<br />
       </p>
