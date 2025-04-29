@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { db } from "./firebaseConfig";
 import { ref, push, onValue, off } from "firebase/database";
-import { Send } from "lucide-react"; // Papierflieger-Icon
+import { Send } from "lucide-react";
+
+const MAX_MESSAGE_LENGTH = 100;
 
 const ChatBox = ({ roomCode, playerName }) => {
   const [messages, setMessages] = useState([]);
@@ -40,11 +42,12 @@ const ChatBox = ({ roomCode, playerName }) => {
 
   const sendMessage = async () => {
     if (input.trim() === "" || !playerName) return;
+    const trimmed = input.trim().slice(0, MAX_MESSAGE_LENGTH);
 
     const chatRef = ref(db, `rooms/${roomCode}/chat`);
     await push(chatRef, {
       sender: playerName,
-      text: input.trim(),
+      text: trimmed,
       type: "text",
       timestamp: Date.now()
     });
@@ -92,9 +95,7 @@ const ChatBox = ({ roomCode, playerName }) => {
     }
   };
 
-  if (!roomCode) {
-    return null;
-  }
+  if (!roomCode) return null;
 
   return (
     <div style={{
@@ -191,7 +192,10 @@ const ChatBox = ({ roomCode, playerName }) => {
                   }
                 }}
               >
-                <strong style={{ color: "#39c2ff" }}>{msg.sender}:</strong> {msg.type === "text" ? msg.text : `Play Sound ▶️`}
+                <strong style={{ color: "#39c2ff", fontSize: "22px" }}>{msg.sender}:</strong>{" "}
+                <span style={{ fontSize: "22px" }}>
+                  {msg.type === "text" ? msg.text : `Play Sound ▶️`}
+                </span>
               </div>
             ))}
             <div ref={messagesEndRef} />
@@ -201,11 +205,13 @@ const ChatBox = ({ roomCode, playerName }) => {
           <div style={{ display: "flex", gap: "8px", marginBottom: "15px" }}>
             <input
               value={input}
+              maxLength={MAX_MESSAGE_LENGTH}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               onFocus={() => setShowEmojis(true)}
               disabled={!playerName}
               placeholder={playerName ? "Nachricht eingeben..." : "Bitte erst beitreten..."}
+              title={`${input.length}/${MAX_MESSAGE_LENGTH} Zeichen`}
               style={{
                 flex: 1,
                 border: "none",
