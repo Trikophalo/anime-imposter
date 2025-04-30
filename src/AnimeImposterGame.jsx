@@ -880,9 +880,7 @@ const imposterInputStyle = {
 
       <MusicPlayer showPlayer={true} isMobile={isMobile} />
 
-      {!isMobile && (
       <ChatBox roomCode={roomCode} playerName={playerName} />
-    )}
 
   
       {isMobile && (
@@ -939,24 +937,26 @@ const imposterInputStyle = {
           ❓
         </div>
 
-        {/* Chat */}
-        <div
-          onClick={() => document.querySelector("#openChatButton")?.click()}
-          style={{
-            width: "50px",
-            height: "50px",
-            backgroundColor: "#39c2ff",
-            borderRadius: "50%",
-            color: "white",
-            fontSize: "26px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer"
-          }}
-        >
-          💬
-        </div>
+        {playerName && (
+          <div
+            onClick={() => document.querySelector("#openChatButton")?.click()}
+            style={{
+              width: "50px",
+              height: "50px",
+              backgroundColor: "#39c2ff",
+              borderRadius: "50%",
+              color: "white",
+              fontSize: "26px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer"
+            }}
+          >
+            💬
+          </div>
+        )}
+
 
         {/* Musik */}
         <div
@@ -1038,7 +1038,16 @@ const imposterInputStyle = {
 
   
           {!roomCode ? (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+              <div style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",             // ✅ wichtig für Input + Text
+                width: "100%",
+                padding: "0 20px",
+                marginTop: isMobile ? "30px" : "40px"
+              }}>
               <button
                 onClick={createRoom}
                 style={{
@@ -1046,7 +1055,7 @@ const imposterInputStyle = {
                   color: "white",
                   fontWeight: "bold",
                   padding: "20px 40px",
-                  fontSize: "1.8vw",
+                  fontSize: isMobile ? "clamp(24px, 6vw, 32px)" : "1.8vw",
                   borderRadius: "15px",
                   border: "none",
                   marginTop: "40px",
@@ -1202,15 +1211,18 @@ const imposterInputStyle = {
               Raum-Code: <span style={{ color: "#39c2ff" }}>{roomCode}</span>
             </h2>
 
-          <div style={{
-            backgroundColor: "rgba(0,0,0,0.5)",
-            padding: "40px",
-            borderRadius: "15px",
-            width: "100%",
-            maxWidth: "1000px",
-            margin: "20px auto",
-            textAlign: "center"
-          }}>
+            <div style={{
+              backgroundColor: "rgba(0,0,0,0.5)",
+              padding: "40px",
+              borderRadius: "15px",
+              width: "100%",
+              maxWidth: "1000px",
+              margin: "20px auto",
+              textAlign: "center",
+              marginLeft: "auto",
+              marginRight: "auto"
+            }}>
+
             <h3 style={{ fontSize: "42px", marginBottom: "20px" }}>
               Spieler ({players.length}/8):
             </h3>
@@ -1247,15 +1259,17 @@ const imposterInputStyle = {
 
         {hostId && players.find(p => p.name === playerName && p.id === hostId) && !gameStarted && (
           <>
-              <div style={{
-                backgroundColor: "rgba(0,0,0,0.5)",
-                padding: "40px",
-                borderRadius: "15px",
-                width: "100%",
-                maxWidth: "1000px",
-                margin: "30px auto",     
-                textAlign: "center"
-              }}>
+            <div style={{
+            backgroundColor: "rgba(0,0,0,0.5)",
+            padding: "40px",
+            borderRadius: "15px",
+            width: "100%",
+            maxWidth: "1000px",
+            margin: "30px auto",     
+            textAlign: "center",
+            marginLeft: "auto",
+            marginRight: "auto"
+          }}>
             <h3 style={{ fontSize: "42px", marginBottom: "20px" }}>Thema wählen:</h3>
             <div className="theme-buttons-wrapper">
               <div className="theme-buttons">
@@ -1331,6 +1345,8 @@ const imposterInputStyle = {
                       width: "100%",
                       maxWidth: "1000px",
                       textAlign: "center",
+                      marginLeft: "auto",
+                      marginRight: "auto"                  
                     }}
                   >
                     <h3 style={{ fontSize: "42px", marginBottom: "30px" }}>Dein Wort:</h3>
@@ -1374,7 +1390,17 @@ const imposterInputStyle = {
                   {!votedPlayer && !imposterGuessed && (
                     <>
                       <h3 style={{ fontSize: "36px", marginTop: "40px", marginBottom: "20px" }}>Abstimmung:</h3>
-                      <div className="player-list">
+                      <div
+                            className="player-list"
+                            style={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              justifyContent: "center",     // ❗ wichtig fürs Zentrieren
+                              gap: "20px",
+                              marginLeft: "auto",           // ❗ für zusätzliche Zentrierung bei kleineren Breiten
+                              marginRight: "auto"
+                            }}
+                          >
                         {players.map((player) => (
                           <button
                             key={player.id}
