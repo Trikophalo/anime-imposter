@@ -801,17 +801,24 @@ const imposterInputStyle = {
     <div style={mainContainerStyle}>
       <SimpleQuestionMarksBackground />
 
-      <div style={{
-  position: "fixed",
-  top: "60px",
-  left: "60px",
-  zIndex: 200,
-  cursor: "pointer",
-  fontSize: "70px",
-  color: "white"
-}} onClick={() => setShowHelp(true)}>
-  ❓
-</div>
+      {!isMobile && (
+  <div
+    style={{
+      position: "fixed",
+      top: "60px",
+      left: "60px",
+      zIndex: 200,
+      cursor: "pointer",
+      fontSize: "70px",
+      color: "white"
+    }}
+    onClick={() => setShowHelp(true)}
+  >
+    ❓
+  </div>
+)}
+
+
 
 {showHelp && (
   <div style={{
@@ -867,8 +874,12 @@ const imposterInputStyle = {
 )}
 
 
-      <MusicPlayer />
+      <MusicPlayer showPlayer={true} isMobile={isMobile} />
+
+      {!isMobile && (
       <ChatBox roomCode={roomCode} playerName={playerName} />
+    )}
+
   
       {isMobile && (
   <>
