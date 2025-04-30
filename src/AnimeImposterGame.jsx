@@ -720,16 +720,20 @@ export default function AnimeImposterGame() {
     transition: "background-color 0.3s ease"
   };
 
-  const inputStyle = {
-    padding: "15px",
-    width: "90%",
-    maxWidth: "400px",
-    fontSize: "clamp(18px, 4vw, 32px)",
-    borderRadius: "12px",
-    margin: "20px 0",
+  const createRoomButtonStyle = {
+    backgroundColor: "#4caf50",
+    color: "white",
+    fontWeight: "bold",
+    padding: isMobile ? "18px 24px" : "20px 40px",
+    fontSize: isMobile ? "20px" : "1.8vw",
+    borderRadius: "15px",
     border: "none",
-    color: "black"
+    marginTop: "40px",
+    marginBottom: isMobile ? "30px" : "5vw",
+    cursor: "pointer",
+    boxShadow: "0 6px 12px rgba(0,0,0,0.3)"
   };
+  
 
   // Themes selector style
   const themeButtonStyle = {
@@ -1053,7 +1057,7 @@ const imposterInputStyle = {
                 onMouseEnter={(e) => e.target.style.backgroundColor = "#27902b"}
                 onMouseLeave={(e) => e.target.style.backgroundColor = "#4caf50"}
               >
-                ➕ Neuen Bumms erstellen
+                ➕ Neuen Raum erstellen
               </button>
   
               <input
@@ -1062,27 +1066,27 @@ const imposterInputStyle = {
                 value={joinRoomCode}
                 onChange={(e) => setJoinRoomCode(e.target.value)}
                 style={{
-                  padding: "15px",
-                  fontSize: "32px",
-                  width: "60%",
+                  padding: isMobile ? "10px" : "15px",
+                  fontSize: isMobile ? "18px" : "32px",
+                  width: "90%",
                   maxWidth: "400px",
-                  borderRadius: "12px",
-                  marginBottom: "20px",
+                  borderRadius: "10px",
+                  marginBottom: isMobile ? "12px" : "20px",
                   border: "none",
                   textAlign: "center",
                   color: "black"
                 }}
               />
-  
+
               <button
                 onClick={joinExistingRoom}
                 style={{
                   backgroundColor: "#39c2ff",
                   color: "white",
                   fontWeight: "bold",
-                  padding: "15px 30px",
-                  fontSize: "clamp(18px, 4vw, 28px)",
-                  borderRadius: "12px",
+                  padding: isMobile ? "12px 20px" : "15px 30px",
+                  fontSize: isMobile ? "18px" : "28px",
+                  borderRadius: "10px",
                   border: "none",
                   cursor: "pointer",
                   boxShadow: "0 6px 12px rgba(0,0,0,0.3)"
@@ -1092,12 +1096,13 @@ const imposterInputStyle = {
               >
                 Raum beitreten
               </button>
-  
+
               {errorMessage && (
-                <p style={{ color: "#ff3366", fontSize: "clamp(18px, 4vw, 28px)", marginTop: "20px" }}>
+                <p style={{ color: "#ff3366", fontSize: isMobile ? "18px" : "28px", marginTop: "20px" }}>
                   {errorMessage}
                 </p>
               )}
+
             </div>
           ) : (
             <>
@@ -1106,27 +1111,27 @@ const imposterInputStyle = {
               <CopyToClipboard text={roomCode} />
   
               <input
-              type="text"
-              placeholder="Dein Name"
-              value={playerName}
-              onChange={(e) => {
-              if (e.target.value.length <= 12) {
-              setPlayerName(e.target.value);
-                }
-              }}
-              maxLength={10}
-              style={{
-              padding: "15px",
-              fontSize: "32px",
-              width: "30%",
-              borderRadius: "12px",
-              margin: "20px 0",
-               border: "none",
-              color: "black"
-              }}
-            />
+                type="text"
+                placeholder="Dein Name"
+                value={playerName}
+                onChange={(e) => {
+                  if (e.target.value.length <= 12) {
+                    setPlayerName(e.target.value);
+                  }
+                }}
+                maxLength={10}
+                style={{
+                  padding: "15px",
+                  fontSize: "clamp(18px, 5vw, 32px)",
+                  width: "90%",
+                  maxWidth: "400px",
+                  borderRadius: "12px",
+                  margin: "20px 0",
+                  border: "none",
+                  color: "black"
+                }}
+              />
 
-  
               <button
                 onClick={joinRoom}
                 disabled={!playerName.trim()}
@@ -1136,47 +1141,66 @@ const imposterInputStyle = {
                   fontWeight: "bold",
                   padding: "15px 30px",
                   borderRadius: "12px",
-                  fontSize: "32px",
-                  margin: "10px",
-                  cursor: "pointer",
+                  fontSize: "clamp(18px, 5vw, 32px)",
+                  margin: "10px 0",
+                  cursor: playerName.trim() ? "pointer" : "not-allowed",
                   boxShadow: "0 4px 8px rgba(0,0,0,0.3)",
                   border: "none",
-                  width: "30%",
+                  width: "90%",
+                  maxWidth: "400px",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  textAlign: "center",
                   transition: "background-color 0.3s ease"
                 }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = "#279cd0"}
-                onMouseLeave={(e) => e.target.style.backgroundColor = "#39c2ff"}
+                onMouseEnter={(e) => {
+                  if (playerName.trim()) e.target.style.backgroundColor = "#279cd0";
+                }}
+                onMouseLeave={(e) => {
+                  if (playerName.trim()) e.target.style.backgroundColor = "#39c2ff";
+                }}
               >
                 Beitreten
               </button>
+
               </div>
             </>
           )}
         </>
       ) : (
         <>
-        <div style={{ textAlign: "center", marginTop: "20px" }}>
-          <h3 
-            style={{ 
-              ...titleStyle, 
-              cursor: "pointer", 
-              marginBottom: "10px" 
-            }} 
-            onClick={returnToHome}
-          >
-            Who will be the Imposter?
-          </h3>
+          <div style={{ 
+            textAlign: "center", 
+            marginTop: "20px", 
+            display: "flex", 
+            flexDirection: "column", 
+            alignItems: "center",
+            padding: "0 20px"  // etwas horizontaler Abstand auf kleinen Screens
+          }}>
+            <h3 
+              style={{ 
+                ...titleStyle, 
+                cursor: "pointer", 
+                marginBottom: "10px", 
+                textAlign: "center"
+              }} 
+              onClick={returnToHome}
+            >
+              Who will be the Imposter?
+            </h3>
 
-          <h2 
-            style={{ 
-              fontSize: "48px", 
-              marginBottom: "30px", 
-              color: "#ffffff", 
-              textShadow: "2px 2px 4px rgba(0,0,0,0.4)" 
-            }}
-          >
-            Raum-Code: <span style={{ color: "#39c2ff" }}>{roomCode}</span>
-          </h2>
+            <h2 
+              style={{ 
+                fontSize: "clamp(24px, 5vw, 48px)", 
+                marginBottom: "30px", 
+                color: "#ffffff", 
+                textShadow: "2px 2px 4px rgba(0,0,0,0.4)",
+                textAlign: "center"
+              }}
+            >
+              Raum-Code: <span style={{ color: "#39c2ff" }}>{roomCode}</span>
+            </h2>
 
           <div style={{
             backgroundColor: "rgba(0,0,0,0.5)",
@@ -1248,19 +1272,27 @@ const imposterInputStyle = {
             </div> {/* ✅ jetzt korrekt geschlossen */}
           </div>
 
-          <div style={{ textAlign: "center", marginTop: "40px" }}>
-          <button
-            style={{
-              ...buttonStyle,
-              backgroundColor: players.length < 3 ? "#888" : "#ff3366",
-              width: "100%",
-              maxWidth: "400px",
-              fontSize: "clamp(20px, 5vw, 36px)",
-              padding: "18px 36px",
-              margin: "0 auto",
-              transition: "background-color 0.3s ease",
-              cursor: players.length < 3 ? "not-allowed" : "pointer"
-            }}
+          <div style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            textAlign: "center",
+            marginTop: "40px",
+            padding: "0 20px"
+          }}>
+            <button
+              style={{
+                ...buttonStyle,
+                backgroundColor: players.length < 3 ? "#888" : "#ff3366",
+                width: "100%",
+                maxWidth: "400px",
+                fontSize: "clamp(20px, 5vw, 36px)",
+                padding: "18px 36px",
+                transition: "background-color 0.3s ease",
+                cursor: players.length < 3 ? "not-allowed" : "pointer",
+                textAlign: "center"
+              }}
+
             onClick={startGame}
             disabled={players.length < 3}
             onMouseEnter={(e) => {
