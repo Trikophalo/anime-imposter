@@ -125,6 +125,7 @@ export default function MusicPlayer() {
 
       {/* Musik-Wechsel-Button (Radio) */}
       <div
+        id="changeMusicButton"
         onClick={handleChangeMusic}
         title="Musik wechseln"
         style={{

@@ -93,6 +93,7 @@ const ChatBox = ({ roomCode, playerName }) => {
     >
       {!isOpen ? (
         <button
+          id="openChatButton" 
           onClick={() => {
             setIsOpen(true);
             setHasNewMessages(false);

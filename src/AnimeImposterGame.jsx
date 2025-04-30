@@ -271,6 +271,7 @@ export default function AnimeImposterGame() {
   const [shouldStartNewGame, setShouldStartNewGame] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Neue Zustände für die Imposter-Erraten-Funktionalität
   const [imposterGuess, setImposterGuess] = useState("");
@@ -869,6 +870,104 @@ const imposterInputStyle = {
       <MusicPlayer />
       <ChatBox roomCode={roomCode} playerName={playerName} />
   
+      {isMobile && (
+  <>
+    <div
+      onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+      style={{
+        position: "fixed",
+        bottom: "20px",
+        left: "20px",
+        width: "60px",
+        height: "60px",
+        borderRadius: "50%",
+        backgroundColor: "#ff3366",
+        color: "white",
+        fontSize: "32px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        boxShadow: "0 4px 8px rgba(0,0,0,0.4)",
+        cursor: "pointer",
+        zIndex: 10000
+      }}
+    >
+      ☰
+    </div>
+
+    {mobileMenuOpen && (
+      <div style={{
+        position: "fixed",
+        bottom: "100px",
+        left: "20px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "14px",
+        zIndex: 10001
+      }}>
+        {/* Fragezeichen */}
+        <div
+          onClick={() => setShowHelp(true)}
+          style={{
+            width: "50px",
+            height: "50px",
+            backgroundColor: "#39c2ff",
+            borderRadius: "50%",
+            color: "white",
+            fontSize: "28px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer"
+          }}
+        >
+          ❓
+        </div>
+
+        {/* Chat */}
+        <div
+          onClick={() => document.querySelector("#openChatButton")?.click()}
+          style={{
+            width: "50px",
+            height: "50px",
+            backgroundColor: "#39c2ff",
+            borderRadius: "50%",
+            color: "white",
+            fontSize: "26px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer"
+          }}
+        >
+          💬
+        </div>
+
+        {/* Musik */}
+        <div
+          onClick={() => document.querySelector("#changeMusicButton")?.click()}
+          style={{
+            width: "50px",
+            height: "50px",
+            backgroundColor: "#39c2ff",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer"
+          }}
+        >
+          <img
+            src="/pics/Radio_Icon.png"
+            alt="Musik"
+            style={{ width: "30px", height: "30px", objectFit: "contain" }}
+          />
+        </div>
+      </div>
+    )}
+  </>
+)}
+
       {showResults ? (
         <div style={{ marginTop: "80px", textAlign: "center" }}>
           <h2 style={{ fontSize: "72px", marginBottom: "40px", fontWeight: "bold" }}>Ergebnisse<br /><br /></h2>
