@@ -1042,7 +1042,7 @@ const imposterInputStyle = {
                 onMouseEnter={(e) => e.target.style.backgroundColor = "#27902b"}
                 onMouseLeave={(e) => e.target.style.backgroundColor = "#4caf50"}
               >
-                ➕ Neuen Raum erstellen
+                ➕ Neuen Bumms erstellen
               </button>
   
               <input
