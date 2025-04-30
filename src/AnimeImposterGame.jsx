@@ -270,6 +270,7 @@ export default function AnimeImposterGame() {
   const [startingPlayer, setStartingPlayer] = useState(0);
   const [shouldStartNewGame, setShouldStartNewGame] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Neue Zustände für die Imposter-Erraten-Funktionalität
   const [imposterGuess, setImposterGuess] = useState("");
@@ -296,6 +297,13 @@ export default function AnimeImposterGame() {
     setGameEndReason("");
     setImposterName("");
   }
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   
   useEffect(() => {
     if (!hasJoined) {
@@ -683,19 +691,12 @@ export default function AnimeImposterGame() {
 
   // Styles
   const mainContainerStyle = {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    padding: "40px",
-    minHeight: "100vh",
-    color: "white",
-    fontSize: "36px",
-    position: "relative",
-    zIndex: 1
+    fontSize: "clamp(18px, 5vw, 36px)",
+    padding: "clamp(20px, 5vw, 40px)",
   };
 
   const titleStyle = {
-    fontSize: "80px",
+    fontSize: "clamp(36px, 8vw, 80px)",
     fontWeight: "900",
     marginBottom: "20px",
     color: "#ff3366",
@@ -703,24 +704,26 @@ export default function AnimeImposterGame() {
   };
 
   const buttonStyle = {
+    width: "90%",
+    maxWidth: "400px",
+    fontSize: "clamp(18px, 4vw, 32px)",
     backgroundColor: "#39c2ff",
     color: "white",
     fontWeight: "bold",
     padding: "15px 30px",
     borderRadius: "12px",
-    fontSize: "32px",
     margin: "10px",
     cursor: "pointer",
     boxShadow: "0 4px 8px rgba(0,0,0,0.3)",
     border: "none",
-    width: "30%",
     transition: "background-color 0.3s ease"
   };
 
   const inputStyle = {
     padding: "15px",
-    fontSize: "32px",
-    width: "30%",
+    width: "90%",
+    maxWidth: "400px",
+    fontSize: "clamp(18px, 4vw, 32px)",
     borderRadius: "12px",
     margin: "20px 0",
     border: "none",
@@ -768,8 +771,8 @@ const imposterInputStyle = {
   display: "block",        // Neu
   margin: "20px auto",     // Neu: Zentrieren
   padding: "15px",
-  fontSize: "32px",
-  width: "70%",
+  width: "90%",
+  fontSize: "clamp(18px, 4vw, 32px)",
   borderRadius: "12px",
   border: "none",
   color: "black"
@@ -827,13 +830,13 @@ const imposterInputStyle = {
       color: "black",
       padding: "30px",
       borderRadius: "15px",
-      width: "100%",
+      width: "90%",
       maxWidth: "780px",
       textAlign: "center",
       position: "relative"
     }}>
       <h3 style={{ marginBottom: "20px" }}>Wie funktioniert das Spiel?</h3>
-      <p style={{ fontSize: "28px", marginBottom: "20px", fontWeight: "500", fontFamily: "monospace", whiteSpace: "pre-line" }}>
+      <p style={{ fontSize: "clamp(18px, 4vw, 28px)", marginBottom: "20px", fontWeight: "500", fontFamily: "monospace", whiteSpace: "pre-line" }}>
         1. Alle Spieler bis auf den Imposter erhalten denselben Begriff. ✏️<br /> <br />
         2. Reihum nennt jeder ein passendes Wort zum <br />Begriff, um den Imposter zu entlarven.<br /> 
         (Der Imposter muss sich nun <br />unaufällig untermischen. 🤫)<br /><br />
@@ -872,27 +875,27 @@ const imposterInputStyle = {
   
           {gameEndReason === "imposterGuess" ? (
             <>
-              <p style={{ fontSize: "60px", marginBottom: "30px" }}>
+              <p style={{ fontSize: "clamp(24px, 6vw, 60px)", marginBottom: "30px" }}>
                 Der Imposter <span style={{ fontWeight: "bold", color: "#ff3366" }}>{imposterName}</span> hat
                 {imposterWon ? " das Wort richtig erraten!" : " das Wort falsch erraten!"}
               </p>
               <p style={{ fontSize: "48px", marginBottom: "30px" }}>
                 Das richtige Wort war: <span style={{ fontWeight: "bold" }}>{commonRole}<br /><br /></span>
               </p>
-              <p style={{ fontSize: "60px", marginBottom: "30px", color: imposterWon ? "#ff3366" : "#4caf50", fontWeight: "bold" }}>
+              <p style={{ fontSize: "clamp(24px, 6vw, 60px)", marginBottom: "30px", color: imposterWon ? "#ff3366" : "#4caf50", fontWeight: "bold" }}>
                 {imposterWon ? "Der Imposter hat gewonnen!" : "Der Imposter hat verloren!"}
               </p>
             </>
           ) : (
             <>
-              <p style={{ fontSize: "60px", marginBottom: "30px" }}>Am meisten Votes: <span style={{ fontWeight: "bold" }}>{winner}</span></p>
-              <p style={{ fontSize: "60px", marginBottom: "30px" }}>
+              <p style={{ fontSize: "clamp(24px, 6vw, 60px)", marginBottom: "30px" }}>Am meisten Votes: <span style={{ fontWeight: "bold" }}>{winner}</span></p>
+              <p style={{ fontSize: "clamp(24px, 6vw, 60px)", marginBottom: "30px" }}>
                 Der Imposter war: <span style={{ fontWeight: "bold", color: "#ff3366" }}>{imposterName}</span>
               </p>
               <p style={{ fontSize: "48px", marginBottom: "30px" }}>
                 Das richtige Wort war: <span style={{ fontWeight: "bold" }}>{commonRole}<br /><br /></span>
               </p>
-              <p style={{ fontSize: "60px", marginBottom: "30px", color: imposterWon ? "#ff3366" : "#4caf50", fontWeight: "bold" }}>
+              <p style={{ fontSize: "clamp(24px, 6vw, 60px)", marginBottom: "30px", color: imposterWon ? "#ff3366" : "#4caf50", fontWeight: "bold" }}>
                 {imposterWon ? "Der Imposter hat gewonnen!" : "Der Imposter hat verloren!"}
               </p>
             </>
@@ -902,23 +905,22 @@ const imposterInputStyle = {
         </div>
       ) : !hasJoined ? (
         <>
+        <div style={{ display: "flex", justifyContent: "center", marginTop: "40px" }}>
         <img 
           src="/pics/GameIcon.png" 
           alt="Imposter Game Logo"
           onClick={returnToHome}
           style={{
-            width: "22vw",  // 20% der Bildschirmbreite
-            maxWidth: "800px", // aber maximal 400px groß
+            width: "70vw",
+            maxWidth: "350px",
             cursor: "pointer",
-            marginTop: "0vw",
             filter: "drop-shadow(3px 3px 6px rgba(0,0,0,0.5))",
             transition: "transform 0.3s ease-in-out"
           }}
           onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.1)"}
           onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
         />
-
-
+        </div>
 
   
           {!roomCode ? (
@@ -969,7 +971,7 @@ const imposterInputStyle = {
                   color: "white",
                   fontWeight: "bold",
                   padding: "15px 30px",
-                  fontSize: "1.5vw",
+                  fontSize: "clamp(18px, 4vw, 28px)",
                   borderRadius: "12px",
                   border: "none",
                   cursor: "pointer",
@@ -982,13 +984,14 @@ const imposterInputStyle = {
               </button>
   
               {errorMessage && (
-                <p style={{ color: "#ff3366", fontSize: "28px", marginTop: "20px" }}>
+                <p style={{ color: "#ff3366", fontSize: "clamp(18px, 4vw, 28px)", marginTop: "20px" }}>
                   {errorMessage}
                 </p>
               )}
             </div>
           ) : (
             <>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
               <h2 style={{ fontSize: "48px", marginBottom: "20px" }}>Raum-Code:</h2>
               <CopyToClipboard text={roomCode} />
   
@@ -1036,19 +1039,68 @@ const imposterInputStyle = {
               >
                 Beitreten
               </button>
+              </div>
             </>
           )}
         </>
       ) : (
         <>
-          <h3 style={{ ...titleStyle, cursor: "pointer" }} onClick={returnToHome}> Who will be the Imposter? </h3>
-          <h2 style={{ fontSize: "48px", marginBottom: "20px" }}>Raum-Code: {roomCode}</h2>
+        <div style={{ textAlign: "center", marginTop: "20px" }}>
+          <h3 
+            style={{ 
+              ...titleStyle, 
+              cursor: "pointer", 
+              marginBottom: "10px" 
+            }} 
+            onClick={returnToHome}
+          >
+            Who will be the Imposter?
+          </h3>
 
-          <div style={{ backgroundColor: "rgba(0,0,0,0.5)", padding: "40px", borderRadius: "15px", width: "100%", maxWidth: "1000px", marginTop: "20px" }}>
-            <h3 style={{ fontSize: "42px", marginBottom: "20px" }}>Spieler ({players.length}/8):</h3>
-            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "20px" }}>
+          <h2 
+            style={{ 
+              fontSize: "48px", 
+              marginBottom: "30px", 
+              color: "#ffffff", 
+              textShadow: "2px 2px 4px rgba(0,0,0,0.4)" 
+            }}
+          >
+            Raum-Code: <span style={{ color: "#39c2ff" }}>{roomCode}</span>
+          </h2>
+
+          <div style={{
+            backgroundColor: "rgba(0,0,0,0.5)",
+            padding: "40px",
+            borderRadius: "15px",
+            width: "100%",
+            maxWidth: "1000px",
+            margin: "20px auto",
+            textAlign: "center"
+          }}>
+            <h3 style={{ fontSize: "42px", marginBottom: "20px" }}>
+              Spieler ({players.length}/8):
+            </h3>
+
+            <div className="vote-buttons" style={{
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: "20px"
+            }}>
               {players.map((player) => (
-                <div key={player.id} style={{ padding: "15px 25px", backgroundColor: player.id === hostId ? "#ff3366" : "#39c2ff", borderRadius: "10px", fontWeight: "bold", display: "flex", alignItems: "center", fontSize: "28px" }}>
+                <div 
+                  key={player.id} 
+                  style={{ 
+                    padding: "15px 25px", 
+                    backgroundColor: player.id === hostId ? "#ff3366" : "#39c2ff", 
+                    borderRadius: "10px", 
+                    fontWeight: "bold", 
+                    display: "flex", 
+                    alignItems: "center", 
+                    fontSize: "28px",
+                    boxShadow: "0 4px 8px rgba(0,0,0,0.3)"
+                  }}
+                >
                   {player.name}
                   {player.id === hostId && (
                     <span style={{ marginLeft: "10px", fontSize: "22px" }}>👑</span>
@@ -1057,100 +1109,161 @@ const imposterInputStyle = {
               ))}
             </div>
           </div>
+        </div>
 
-          {hostId && players.find(p => p.name === playerName && p.id === hostId) && !gameStarted && (
-            <>
-              <div style={{ backgroundColor: "rgba(0,0,0,0.5)", padding: "40px", borderRadius: "15px", width: "100%", maxWidth: "1000px", marginTop: "30px" }}>
-                <h3 style={{ fontSize: "42px", marginBottom: "20px" }}>Thema wählen:</h3>
-                <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "15px" }}>
-                  {themes.map((theme, index) => (
-                    <button
-                      key={index}
-                      style={roomTheme === index ? selectedThemeButtonStyle : themeButtonStyle}
-                      onClick={() => changeTheme(index)}
-                    >
-                      {theme.name}
-                    </button>
-                  ))}
-                </div>
+        {hostId && players.find(p => p.name === playerName && p.id === hostId) && !gameStarted && (
+          <>
+              <div style={{
+                backgroundColor: "rgba(0,0,0,0.5)",
+                padding: "40px",
+                borderRadius: "15px",
+                width: "100%",
+                maxWidth: "1000px",
+                margin: "30px auto",     
+                textAlign: "center"
+              }}>
+            <h3 style={{ fontSize: "42px", marginBottom: "20px" }}>Thema wählen:</h3>
+            <div className="theme-buttons-wrapper">
+              <div className="theme-buttons">
+                {themes.map((theme, index) => (
+                  <button
+                    key={index}
+                    style={roomTheme === index ? selectedThemeButtonStyle : themeButtonStyle}
+                    onClick={() => changeTheme(index)}
+                  >
+                    {theme.name}
+                  </button>
+                ))}
               </div>
+            </div> {/* ✅ jetzt korrekt geschlossen */}
+          </div>
 
-              <button
-                style={{ ...buttonStyle, marginTop: "40px", backgroundColor: "#ff3366", width: "50%" }}
-                onClick={startGame}
-                disabled={players.length < 3}
-                onMouseEnter={(e) => e.target.style.backgroundColor = "#279cd0"}
-                onMouseLeave={(e) => e.target.style.backgroundColor = "#ff3366"}
-              >
-                Spiel starten
-              </button>
-              {players.length < 3 && (
-                <p style={{ color: "#ff3366", fontSize: "28px", marginTop: "10px" }}>
-                  Mindestens 3 Spieler werden benötigt!
-                </p>
-              )}
+          <div style={{ textAlign: "center", marginTop: "40px" }}>
+          <button
+            style={{
+              ...buttonStyle,
+              backgroundColor: players.length < 3 ? "#888" : "#ff3366",
+              width: "100%",
+              maxWidth: "400px",
+              fontSize: "clamp(20px, 5vw, 36px)",
+              padding: "18px 36px",
+              margin: "0 auto",
+              transition: "background-color 0.3s ease",
+              cursor: players.length < 3 ? "not-allowed" : "pointer"
+            }}
+            onClick={startGame}
+            disabled={players.length < 3}
+            onMouseEnter={(e) => {
+              if (players.length >= 3) e.target.style.backgroundColor = "#d12a5c";
+            }}
+            onMouseLeave={(e) => {
+              if (players.length >= 3) e.target.style.backgroundColor = "#ff3366";
+            }}
+          >
+           Spiel starten
+          </button>
+
+          {players.length < 3 && (
+            <p style={{ color: "#ff3366", fontSize: "24px", marginTop: "15px" }}>
+              Mindestens 3 Spieler werden benötigt!
+            </p>
+          )}
+        </div>
+
             </>
           )}
 
-          {gameStarted && (
-            <div style={{ backgroundColor: "rgba(0,0,0,0.5)", padding: "40px", borderRadius: "15px", width: "100%", maxWidth: "1000px", marginTop: "30px", textAlign: "center" }}>
-              <h3 style={{ fontSize: "42px", marginBottom: "30px" }}>Dein Wort:</h3>
-              <p style={{ fontSize: "60px", fontWeight: "bold", color: myRole === "Imposter" ? "#ff3366" : "#39c2ff" }}>
-                {myRole === "Imposter" ? "Du bist der Imposter!" : myRole}
-              </p>
-              <p style={{ fontSize: "32px", marginTop: "30px" }}>
-              Spieler <span style={{ color: "#ffd700", fontWeight: "bold" }}>{players[startingPlayer]?.name}</span> beginnt!
-              </p>
-
-
-              {myRole === "Imposter" && !imposterGuessed && (
-                <div style={imposterGuessBoxStyle}>
-                  <input
-                    style={imposterInputStyle}
-                    type="text"
-                    placeholder="Deine Vermutung..."
-                    value={imposterGuess}
-                    onChange={(e) => setImposterGuess(e.target.value)}
-                  />
-                  <button
-                    style={imposterSubmitButtonStyle}
-                    onClick={submitImposterGuess}
-                    disabled={!imposterGuess.trim()}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = "#279cd0"}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = "#39c2ff"}
+              {gameStarted && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    padding: "20px"
+                  }}
+                >
+                  <div
+                    style={{
+                      backgroundColor: "rgba(0, 0, 0, 0.5)",
+                      padding: "40px",
+                      borderRadius: "15px",
+                      width: "100%",
+                      maxWidth: "1000px",
+                      textAlign: "center",
+                    }}
                   >
-                    Erraten
-                  </button>
-                </div>
-              )}
-
-              {!votedPlayer && !imposterGuessed && (
-                <>
-                  <h3 style={{ fontSize: "36px", marginTop: "40px", marginBottom: "20px" }}>Abstimmung:</h3>
-                  <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "15px", marginBottom: "20px" }}>
-                    {players.map((player) => (
+                    <h3 style={{ fontSize: "42px", marginBottom: "30px" }}>Dein Wort:</h3>
+                    <p
+                      style={{
+                        fontSize: "clamp(24px, 6vw, 60px)",
+                        fontWeight: "bold",
+                        color: myRole === "Imposter" ? "#ff3366" : "#39c2ff",
+                      }}
+                    >
+                      {myRole === "Imposter" ? "Du bist der Imposter!" : myRole}
+                    </p>
+                    <p style={{ fontSize: "32px", marginTop: "30px" }}>
+                      Spieler{" "}
+                      <span style={{ color: "#ffd700", fontWeight: "bold" }}>
+                        {players[startingPlayer]?.name}
+                      </span>{" "}
+                      beginnt!
+                    </p>
+                    {myRole === "Imposter" && !imposterGuessed && (
+                    <div style={imposterGuessBoxStyle}>
+                      <input
+                        style={imposterInputStyle}
+                        type="text"
+                        placeholder="Deine Vermutung..."
+                        value={imposterGuess}
+                        onChange={(e) => setImposterGuess(e.target.value)}
+                      />
                       <button
-                        key={player.id}
-                        style={{ ...themeButtonStyle, backgroundColor: player.name === playerName ? "#666" : "#39c2ff", opacity: player.name === playerName ? 0.5 : 1, cursor: player.name === playerName ? "not-allowed" : "pointer" }}
-                        onClick={() => vote(player.name)}
-                        disabled={player.name === playerName}
+                        style={imposterSubmitButtonStyle}
+                        onClick={submitImposterGuess}
+                        disabled={!imposterGuess.trim()}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = "#279cd0"}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = "#39c2ff"}
                       >
-                        {player.name}
+                        Erraten
                       </button>
-                    ))}
-                  </div>
-                </>
-              )}
+                    </div>
+                  )}
 
-              {votedPlayer && (
-                <p style={{ fontSize: "32px", marginTop: "20px" }}>
-                  Du hast für <span style={{ fontWeight: "bold" }}>{votedPlayer}</span> gestimmt.
-                </p>
-              )}
+                  {!votedPlayer && !imposterGuessed && (
+                    <>
+                      <h3 style={{ fontSize: "36px", marginTop: "40px", marginBottom: "20px" }}>Abstimmung:</h3>
+                      <div className="player-list">
+                        {players.map((player) => (
+                          <button
+                            key={player.id}
+                            style={{
+                              ...themeButtonStyle,
+                              backgroundColor: player.name === playerName ? "#666" : "#39c2ff",
+                              opacity: player.name === playerName ? 0.5 : 1,
+                              cursor: player.name === playerName ? "not-allowed" : "pointer"
+                            }}
+                            onClick={() => vote(player.name)}
+                            disabled={player.name === playerName}
+                          >
+                            {player.name}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
 
-              <p style={{ fontSize: "28px", marginTop: "20px" }}>Stimmen abgegeben: {votesCount}/{players.length}</p>
-            </div>
-          )}
+                  {votedPlayer && (
+                    <p style={{ fontSize: "32px", marginTop: "20px" }}>
+                      Du hast für <span style={{ fontWeight: "bold" }}>{votedPlayer}</span> gestimmt.
+                    </p>
+                  )}
+
+                  <p style={{ fontSize: "28px", marginTop: "20px" }}>
+                    Stimmen abgegeben: {votesCount}/{players.length}
+                  </p>
+                </div>
+              </div>
+            )}
         </>
       )}
     </div>

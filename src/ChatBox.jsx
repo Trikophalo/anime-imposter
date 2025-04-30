@@ -27,23 +27,17 @@ const ChatBox = ({ roomCode, playerName }) => {
           setMessages(newMessages);
         }
       });
-
-      return () => {
-        off(chatRef);
-      };
+      return () => off(chatRef);
     }
   }, [roomCode, messages.length, isOpen]);
 
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const sendMessage = async () => {
     if (input.trim() === "" || !playerName) return;
     const trimmed = input.trim().slice(0, MAX_MESSAGE_LENGTH);
-
     const chatRef = ref(db, `rooms/${roomCode}/chat`);
     await push(chatRef, {
       sender: playerName,
@@ -51,14 +45,12 @@ const ChatBox = ({ roomCode, playerName }) => {
       type: "text",
       timestamp: Date.now()
     });
-
     setInput("");
   };
 
   const sendSoundMessage = async (soundName) => {
     if (!playerName) return;
     playSound(soundName);
-
     const chatRef = ref(db, `rooms/${roomCode}/chat`);
     await push(chatRef, {
       sender: playerName,
@@ -69,41 +61,36 @@ const ChatBox = ({ roomCode, playerName }) => {
   };
 
   const playSound = (soundName) => {
-    let soundUrl = "";
+    let soundUrl = soundName === "alarm" ? "/sounds/alarm.mp3" :
+                   soundName === "laugh" ? "/sounds/laugh.mp3" : "";
+    if (!soundUrl) return;
 
-    if (soundName === "alarm") {
-      soundUrl = "/sounds/alarm.mp3";
-    } else if (soundName === "laugh") {
-      soundUrl = "/sounds/laugh.mp3";
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
     }
 
-    if (soundUrl) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
-      const audio = new Audio(soundUrl);
-      audio.volume = 0.5;
-      audioRef.current = audio;
-      audio.play();
-    }
+    const audio = new Audio(soundUrl);
+    audio.volume = 0.5;
+    audioRef.current = audio;
+    audio.play();
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter" && playerName) {
-      sendMessage();
-    }
+    if (e.key === "Enter") sendMessage();
   };
 
   if (!roomCode) return null;
 
   return (
-    <div style={{
-      position: "fixed",
-      bottom: "80px",
-      left: "80px",
-      zIndex: 100
-    }}>
+    <div
+      style={{
+        position: "fixed",
+        bottom: "80px",
+        left: "80px",
+        zIndex: 100
+      }}
+    >
       {!isOpen ? (
         <button
           onClick={() => {
@@ -121,8 +108,11 @@ const ChatBox = ({ roomCode, playerName }) => {
             color: "white",
             cursor: "pointer",
             boxShadow: "0 4px 8px rgba(0,0,0,0.5)",
-            animation: "pulse 2s infinite"
-          }}
+            animation: "pulse 2s infinite",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}          
         >
           💬
           {hasNewMessages && (
@@ -139,27 +129,25 @@ const ChatBox = ({ roomCode, playerName }) => {
           )}
         </button>
       ) : (
-        <div style={{
-          width: "400px",
-          height: "500px",
-          backgroundColor: "rgba(0,0,0,0.8)",
-          borderRadius: "16px",
-          padding: "20px",
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.7)",
-          color: "white",
-          fontSize: "16px",
-          transform: "scale(1)",
-          animation: "pop 0.3s forwards"
-        }}>
-          <div style={{
+        <div
+          style={{
+            width: "330px",
+            maxWidth: "90vw", // Responsive!
+            height: "500px",
+            backgroundColor: "rgba(0,0,0,0.85)",
+            borderRadius: "16px",
+            padding: "20px",
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "15px"
-          }}>
+            flexDirection: "column",
+            overflow: "hidden",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.7)",
+            color: "white",
+            fontSize: "16px",
+            transform: "scale(1)",
+            animation: "pop 0.3s forwards"
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "15px", fontSize: "24px" }}>
             <strong>Chat</strong>
             <button
               onClick={() => setIsOpen(false)}
@@ -167,7 +155,7 @@ const ChatBox = ({ roomCode, playerName }) => {
                 backgroundColor: "transparent",
                 border: "none",
                 color: "white",
-                fontSize: "25px",
+                fontSize: "24px",
                 cursor: "pointer"
               }}
             >
@@ -175,82 +163,63 @@ const ChatBox = ({ roomCode, playerName }) => {
             </button>
           </div>
 
-          <div style={{
-            flex: 1,
-            overflowY: "auto",
-            paddingRight: "10px",
-            marginBottom: "15px",
-            maxHeight: "350px"
-          }}>
+          <div style={{ flex: 1, overflowY: "auto", paddingRight: "8px", marginBottom: "15px" }}>
             {messages.map((msg, index) => (
               <div
                 key={index}
                 style={{ marginBottom: "12px", cursor: msg.type === "sound" ? "pointer" : "default" }}
-                onClick={() => {
-                  if (msg.type === "sound") {
-                    playSound(msg.sound);
-                  }
-                }}
+                onClick={() => msg.type === "sound" && playSound(msg.sound)}
               >
-                <strong style={{ color: "#39c2ff", fontSize: "22px" }}>{msg.sender}:</strong>{" "}
-                <span style={{ fontSize: "22px" }}>
-                  {msg.type === "text" ? msg.text : `Play Sound ▶️`}
+                <strong style={{ color: "#39c2ff", fontSize: "20px" }}>{msg.sender}:</strong>{" "}
+                <span style={{ fontSize: "20px" }}>
+                  {msg.type === "text" ? msg.text : `▶️ Ton abspielen`}
                 </span>
               </div>
             ))}
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Eingabefeld mit Senden-Button */}
-          <div style={{ display: "flex", gap: "8px", marginBottom: "15px" }}>
+          <div style={{ display: "flex", gap: "8px", marginBottom: "10px" }}>
             <input
               value={input}
               maxLength={MAX_MESSAGE_LENGTH}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              onFocus={() => setShowEmojis(true)}
               disabled={!playerName}
               placeholder={playerName ? "Nachricht eingeben..." : "Bitte erst beitreten..."}
-              title={`${input.length}/${MAX_MESSAGE_LENGTH} Zeichen`}
               style={{
                 flex: 1,
                 border: "none",
-                borderRadius: "12px",
-                padding: "15px",
+                borderRadius: "8px",
+                padding: "10px",
                 fontSize: "16px",
                 backgroundColor: playerName ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.05)",
                 color: "white",
                 outline: "none",
-                cursor: playerName ? "text" : "not-allowed",
-                boxSizing: "border-box"
+                cursor: playerName ? "text" : "not-allowed"
               }}
             />
             <button
               onClick={sendMessage}
               disabled={!playerName || input.trim() === ""}
-              title={!playerName ? "Bitte beitreten" : input.trim() === "" ? "Nachricht eingeben" : "Senden"}
               style={{
                 backgroundColor: "#39c2ff",
                 border: "none",
-                borderRadius: "12px",
-                padding: "12px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: playerName && input.trim() !== "" ? "pointer" : "not-allowed",
-                opacity: playerName && input.trim() !== "" ? 1 : 0.5
+                borderRadius: "6px",
+                padding: "8px",
+                cursor: playerName && input.trim() ? "pointer" : "not-allowed",
+                opacity: playerName && input.trim() ? 1 : 0.5
               }}
             >
-              <Send size={20} color="white" />
+              <Send size={18} color="white" />
             </button>
           </div>
-
-          {showEmojis && (
+          {isOpen && (
             <div style={{
-              marginBottom: "15px",
+              marginBottom: "10px",
               display: "flex",
               flexWrap: "wrap",
-              gap: "10px",
+              gap: "8px",
               justifyContent: "center"
             }}>
               {["😀", "😂", "😍", "😭", "😡", "👍", "👎", "🎉", "🔥", "🫃", "💀", "🗿"].map((emoji) => (
@@ -258,8 +227,8 @@ const ChatBox = ({ roomCode, playerName }) => {
                   key={emoji}
                   onClick={() => setInput(input + emoji)}
                   style={{
-                    fontSize: "24px",
-                    padding: "8px",
+                    fontSize: "22px",
+                    padding: "6px",
                     borderRadius: "8px",
                     border: "none",
                     backgroundColor: "rgba(255,255,255,0.1)",
@@ -273,16 +242,16 @@ const ChatBox = ({ roomCode, playerName }) => {
             </div>
           )}
 
-          <div style={{ display: "flex", gap: "15px", marginTop: "15px" }}>
+          <div style={{ display: "flex", gap: "12px" }}>
             <button
               onClick={() => sendSoundMessage("alarm")}
               style={{
                 flex: 1,
                 backgroundColor: "#ff3366",
                 border: "none",
-                borderRadius: "12px",
-                padding: "12px",
-                fontSize: "18px",
+                borderRadius: "10px",
+                padding: "10px",
+                fontSize: "16px",
                 color: "white",
                 cursor: "pointer"
               }}
@@ -295,9 +264,9 @@ const ChatBox = ({ roomCode, playerName }) => {
                 flex: 1,
                 backgroundColor: "#00cc66",
                 border: "none",
-                borderRadius: "12px",
-                padding: "12px",
-                fontSize: "18px",
+                borderRadius: "10px",
+                padding: "10px",
+                fontSize: "16px",
                 color: "white",
                 cursor: "pointer"
               }}

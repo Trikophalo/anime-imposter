@@ -67,7 +67,7 @@ export default function MusicPlayer() {
   }, [userVolume, isMuted, currentTrackIndex]);
 
   const toggleMute = () => {
-    setIsMuted(!isMuted);
+    setIsMuted((prev) => !prev);
   };
 
   const handleChangeMusic = () => {
@@ -81,80 +81,76 @@ export default function MusicPlayer() {
         Dein Browser unterstützt kein Audio-Element.
       </audio>
 
-      {/* Lautstärke-Einstellung */}
-      <div
-        style={{
-          position: "fixed",
-          top: "40px",
-          right: "40px",
-          backgroundColor: "rgba(0,0,0,0.5)",
-          padding: "10px",
-          borderRadius: "12px",
-          display: "flex",
-          alignItems: "center",
-          zIndex: 9999,
-        }}
-      >
-        <button
-          onClick={toggleMute}
+        {/* Lautstärke-Regler + Mute */}
+        <div
           style={{
-            backgroundColor: "transparent",
-            border: "none",
-            cursor: "pointer",
-            color: "white",
-            fontSize: "24px",
-            marginRight: "10px",
+            position: "fixed",
+            top: "20px",
+            right: "20px",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            padding: "4px 6px",
+            borderRadius: "8px"
           }}
         >
-          {isMuted ? "🔇" : "🔊"}
-        </button>
+          <button
+            onClick={toggleMute}
+            style={{
+              backgroundColor: "transparent",
+              border: "none",
+              cursor: "pointer",
+              color: "white",
+              fontSize: "30px",
+              marginRight: "0px"
+            }}
+          >
+            {isMuted ? "🔇" : "🔊"}
+          </button>
 
-        <input
-          type="range"
-          min="0"
-          max="2"
-          step="0.01"
-          value={userVolume}
-          onChange={(e) => setUserVolume(parseFloat(e.target.value))}
-          style={{
-            width: "100px",
-            accentColor: "#ff3366",
-          }}
-        />
-      </div>
+          <input
+            type="range"
+            min="0"
+            max="2"
+            step="0.01"
+            value={userVolume}
+            onChange={(e) => setUserVolume(parseFloat(e.target.value))}
+            style={{
+              width: "80px",
+              accentColor: "#ff3366"
+            }}
+          />
+        </div>
 
-      {/* Musik-Wechsel-Button mit Hover-Effekt */}
+
+      {/* Musik-Wechsel-Button (Radio) */}
       <div
         onClick={handleChangeMusic}
         title="Musik wechseln"
         style={{
           position: "fixed",
-          bottom: "30px",
-          right: "30px",
-          width: "190px",
-          height: "190px",
+          bottom: "75px",
+          right: "75px", // weiter nach links
+          width: "90px",  // größer
+          height: "90px",
           zIndex: 9999,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "transparent",
-          borderRadius: "50%",
           cursor: "pointer",
-          transition: "transform 0.2s ease-in-out",
+          transition: "transform 0.2s ease-in-out"
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.2)")}
+        onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.3)")}
         onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
       >
         <img
           src="/pics/Radio_Icon.png"
           alt="Musik wechseln"
           style={{
-            width: "60%",
-            height: "60%",
+            width: "100%",
+            height: "100%",
             objectFit: "contain",
-            borderRadius: "50%",
-            backgroundColor: "transparent",
-            animation: "pulse 2s infinite ease-in-out",
+            animation: "pulse 2s infinite ease-in-out"
           }}
         />
       </div>
@@ -162,7 +158,7 @@ export default function MusicPlayer() {
       <style>{`
         @keyframes pulse {
           0% { transform: scale(1); }
-          50% { transform: scale(1.1); }
+          50% { transform: scale(1.08); }
           100% { transform: scale(1); }
         }
       `}</style>
