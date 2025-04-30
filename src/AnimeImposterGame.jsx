@@ -880,9 +880,8 @@ const imposterInputStyle = {
 
       <MusicPlayer showPlayer={true} isMobile={isMobile} />
 
-      <ChatBox roomCode={roomCode} playerName={playerName} />
+      {!isMobile && <ChatBox roomCode={roomCode} playerName={playerName} />}
 
-  
       {isMobile && (
   <>
     <div
@@ -1019,23 +1018,28 @@ const imposterInputStyle = {
         </div>
       ) : !hasJoined ? (
         <>
-        <div style={{ display: "flex", justifyContent: "center", marginTop: "40px" }}>
-        <img 
-          src="/pics/GameIcon.png" 
-          alt="Imposter Game Logo"
-          onClick={returnToHome}
-          style={{
-            width: "70vw",
-            maxWidth: "350px",
-            cursor: "pointer",
-            filter: "drop-shadow(3px 3px 6px rgba(0,0,0,0.5))",
-            transition: "transform 0.3s ease-in-out"
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.1)"}
-          onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
-        />
-        </div>
-
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              marginTop: isMobile ? "20px" : "40px",
+            }}
+          >
+            <img
+              src="/pics/GameIcon.png"
+              alt="Imposter Game Logo"
+              onClick={returnToHome}
+              style={{
+                width: "clamp(200px, 40vw, 400px)", // passt sich automatisch an Bildschirmbreite an
+                cursor: "pointer",
+                filter: "drop-shadow(3px 3px 6px rgba(0,0,0,0.5))",
+                transition: "transform 0.3s ease-in-out",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+            />
+          </div>
   
           {!roomCode ? (
               <div style={{
@@ -1045,7 +1049,7 @@ const imposterInputStyle = {
                 justifyContent: "center",
                 textAlign: "center",             // ✅ wichtig für Input + Text
                 width: "100%",
-                padding: "0 20px",
+                padding: 0,
                 marginTop: isMobile ? "30px" : "40px"
               }}>
               <button
@@ -1058,8 +1062,8 @@ const imposterInputStyle = {
                   fontSize: isMobile ? "clamp(24px, 6vw, 32px)" : "1.8vw",
                   borderRadius: "15px",
                   border: "none",
-                  marginTop: "40px",
-                  marginBottom: "5vw",
+                  marginTop: isMobile ? "5px" : "20px",
+                  marginBottom: isMobile ? "8px" : "2vw",
                   cursor: "pointer",
                   boxShadow: "0 6px 12px rgba(0,0,0,0.3)"
                 }}
@@ -1097,7 +1101,7 @@ const imposterInputStyle = {
                   fontSize: isMobile ? "18px" : "28px",
                   borderRadius: "10px",
                   border: "none",
-                  cursor: "pointer",
+                  marginBottom: isMobile ? "0px" : "20px", 
                   boxShadow: "0 6px 12px rgba(0,0,0,0.3)"
                 }}
                 onMouseEnter={(e) => e.target.style.backgroundColor = "#279cd0"}
