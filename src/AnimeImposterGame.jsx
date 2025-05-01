@@ -938,26 +938,6 @@ const imposterInputStyle = {
           ❓
         </div>
 
-        {playerName && (
-          <div
-            onClick={() => document.querySelector("#openChatButton")?.click()}
-            style={{
-              width: "50px",
-              height: "50px",
-              backgroundColor: "#39c2ff",
-              borderRadius: "50%",
-              color: "white",
-              fontSize: "26px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer"
-            }}
-          >
-            💬
-          </div>
-        )}
-
 
         {/* Musik */}
         <div
@@ -1081,12 +1061,12 @@ const imposterInputStyle = {
                 value={joinRoomCode}
                 onChange={(e) => setJoinRoomCode(e.target.value)}
                 style={{
-                  padding: isMobile ? "10px" : "15px",
-                  fontSize: isMobile ? "18px" : "32px",
+                  padding: isMobile ? "15px 0px" : "20px 20px",
+                  fontSize: isMobile ? "20px" : "32px",
                   width: "90%",
                   maxWidth: "400px",
                   borderRadius: "10px",
-                  marginTop: isMobile ? "52px" : "0px",
+                  marginTop: isMobile ? "52px" : "1vw",
                   marginBottom: isMobile ? "12px" : "20px",
                   border: "none",
                   textAlign: "center",
