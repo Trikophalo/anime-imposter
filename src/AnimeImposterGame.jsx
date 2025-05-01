@@ -758,7 +758,7 @@ export default function AnimeImposterGame() {
 
   const imposterGuessBoxStyle = {
     backgroundColor: "#ff3366",
-    padding: "30px",
+    padding: isMobile ? "20px 0px" : "30px 30px",
     borderRadius: "15px",
     marginTop: "30px",
     boxShadow: "0 8px 16px rgba(0,0,0,0.5)",
@@ -778,6 +778,7 @@ const imposterInputStyle = {
   padding: "15px",
   width: "90%",
   fontSize: "clamp(18px, 4vw, 32px)",
+  padding: isMobile ? "20px 0px" : "30px 30px",
   borderRadius: "12px",
   border: "none",
   color: "black"
@@ -791,6 +792,7 @@ const imposterInputStyle = {
     fontWeight: "bold",
     padding: "15px 30px",
     borderRadius: "12px",
+    padding: isMobile ? "20px 0px" : "30px 30px",
     fontSize: "32px",
     margin: "10px",
     cursor: "pointer",
@@ -1217,7 +1219,7 @@ const imposterInputStyle = {
 
             <div style={{
               backgroundColor: "rgba(0,0,0,0.5)",
-              padding: "40px",
+              padding: isMobile ? "30px 0" : "30px 30px",
               borderRadius: "15px",
               width: "100%",
               maxWidth: "1000px",
@@ -1248,7 +1250,8 @@ const imposterInputStyle = {
                     display: "flex", 
                     alignItems: "center", 
                     fontSize: "28px",
-                    boxShadow: "0 4px 8px rgba(0,0,0,0.3)"
+                    boxShadow: "0 4px 8px rgba(0,0,0,0.3)",
+                    fontSize: "clamp(18px, 5vw, 32px)"
                   }}
                 >
                   {player.name}
@@ -1265,7 +1268,7 @@ const imposterInputStyle = {
           <>
             <div style={{
             backgroundColor: "rgba(0,0,0,0.5)",
-            padding: "40px",
+            padding: isMobile ? "20px 0px" : "30px 30px",
             borderRadius: "15px",
             width: "100%",
             maxWidth: "1000px",
@@ -1353,10 +1356,10 @@ const imposterInputStyle = {
                       marginRight: "auto"                  
                     }}
                   >
-                    <h3 style={{ fontSize: "42px", marginBottom: "30px" }}>Dein Wort:</h3>
+                    <h3 style={{ fontSize: "clamp(25px, 5vw, 46px)", marginBottom: "30px" }}>Dein Wort:</h3>
                     <p
                       style={{
-                        fontSize: "clamp(24px, 6vw, 60px)",
+                        fontSize: "clamp(34px, 6vw, 60px)",
                         fontWeight: "bold",
                         color: myRole === "Imposter" ? "#ff3366" : "#39c2ff",
                       }}
