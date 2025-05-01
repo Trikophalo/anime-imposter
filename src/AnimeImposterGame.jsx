@@ -1060,12 +1060,12 @@ const imposterInputStyle = {
                   backgroundColor: "#4caf50",
                   color: "white",
                   fontWeight: "bold",
-                  padding: "20px 40px",
+                  padding: isMobile ? "10px" : "25px",
                   fontSize: isMobile ? "clamp(24px, 6vw, 32px)" : "1.8vw",
                   borderRadius: "15px",
                   border: "none",
-                  marginTop: isMobile ? "5px" : "20px",
-                  marginBottom: isMobile ? "8px" : "2vw",
+                  marginTop: isMobile ? "5px" : "0px",
+                  marginBottom: isMobile ? "8px" : "3vw",
                   cursor: "pointer",
                   boxShadow: "0 6px 12px rgba(0,0,0,0.3)"
                 }}
@@ -1086,6 +1086,7 @@ const imposterInputStyle = {
                   width: "90%",
                   maxWidth: "400px",
                   borderRadius: "10px",
+                  marginTop: isMobile ? "52px" : "0px",
                   marginBottom: isMobile ? "12px" : "20px",
                   border: "none",
                   textAlign: "center",
@@ -1229,7 +1230,7 @@ const imposterInputStyle = {
               marginRight: "auto"
             }}>
 
-            <h3 style={{ fontSize: "42px", marginBottom: "20px" }}>
+            <h3 style={{ fontSize: "clamp(24px, 5vw, 48px)", marginBottom: "20px" }}>
               Spieler ({players.length}/8):
             </h3>
 
@@ -1237,7 +1238,7 @@ const imposterInputStyle = {
               display: "flex",
               flexWrap: "wrap",
               justifyContent: "center",
-              gap: "20px"
+              gap: "20px",
             }}>
               {players.map((player) => (
                 <div 
